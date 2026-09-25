@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Activity, 
   AlertOctagon, 
@@ -13,8 +13,11 @@ import {
   ArrowRight,
   GitPullRequest,
   Check,
-  Copy
+  Copy,
+  TrendingUp,
+  RefreshCw
 } from "lucide-react";
+import { TerminalModal } from "./TerminalModal";
 
 interface Incident {
   id: string;
@@ -66,10 +69,28 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
 }) => {
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
   const [copiedKillswitch, setCopiedKillswitch] = useState<string | null>(null);
+  const [telemetryData, setTelemetryData] = useState<any | null>(null);
+  const [showTerminalPrId, setShowTerminalPrId] = useState<string | null>(null);
+
+  const fetchTelemetry = async () => {
+    try {
+      const res = await fetch("http://localhost:8000/api/deployments/telemetry");
+      if (res.ok) {
+        setTelemetryData(await res.json());
+      }
+    } catch (e) {
+      console.error("Telemetry fetch failed:", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchTelemetry();
+  }, []);
 
   const handleSimulate = async (type: string, title: string) => {
     setIsSimulating(true);
     await onTriggerIncident(type, title);
+    await fetchTelemetry();
     setIsSimulating(false);
   };
 
@@ -80,6 +101,20 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
   };
 
   const activeIncidents = incidents.filter((i) => i.status !== "RESOLVED");
+
+  // Format telemetry SVG coordinates
+  const points = telemetryData?.points || [];
+  const maxLatency = Math.max(...points.map((p: any) => p.p99_latency_ms), 1000);
+  const svgWidth = 600;
+  const svgHeight = 120;
+
+  const sparklineCoords = points
+    .map((p: any, i: number) => {
+      const x = (i / (points.length - 1 || 1)) * svgWidth;
+      const y = svgHeight - (p.p99_latency_ms / maxLatency) * (svgHeight - 20) - 10;
+      return `${x},${y}`;
+    })
+    .join(" ");
 
   return (
     <div className="space-y-8">
@@ -117,6 +152,81 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Live Telemetry Sparkline & Metrics Monitor */}
+      {telemetryData && (
+        <div className="glass-panel p-5 rounded-2xl bg-[#0d121e] border border-[rgba(255,255,255,0.08)] space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="w-4 h-4 text-cyan-400" />
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                Production Real-Time Telemetry Stream ({telemetryData.cluster})
+              </h4>
+            </div>
+            <div className="flex items-center space-x-3 text-xs text-slate-400">
+              <span>Mesh: <strong className="text-slate-200">{telemetryData.mesh}</strong></span>
+              <span>Canary: <strong className="text-cyan-400">{telemetryData.canary_weight}%</strong></span>
+              <span>Stable: <strong className="text-emerald-400">{telemetryData.stable_weight}%</strong></span>
+              <button onClick={fetchTelemetry} className="p-1 hover:text-white" title="Refresh Telemetry">
+                <RefreshCw className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* SVG Latency Chart */}
+            <div className="lg:col-span-2 p-3.5 rounded-xl bg-[#07090e] border border-white/5 space-y-2">
+              <div className="flex items-center justify-between text-[11px] text-slate-400">
+                <span>p99 Latency Stream (Last 30 mins)</span>
+                <span className="text-red-400 font-bold">Max: {maxLatency.toLocaleString()} ms</span>
+              </div>
+              <div className="w-full overflow-hidden">
+                <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-24 overflow-visible">
+                  <defs>
+                    <linearGradient id="latencyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#ef4444" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
+                  {sparklineCoords && (
+                    <>
+                      <polygon
+                        points={`0,${svgHeight} ${sparklineCoords} ${svgWidth},${svgHeight}`}
+                        fill="url(#latencyGrad)"
+                      />
+                      <polyline
+                        fill="none"
+                        stroke="#ef4444"
+                        strokeWidth="2.5"
+                        points={sparklineCoords}
+                      />
+                    </>
+                  )}
+                </svg>
+              </div>
+              <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                <span>{points[0]?.timestamp || "T-30m"}</span>
+                <span className="text-red-400">Deployment Spike Detected</span>
+                <span>{points[points.length - 1]?.timestamp || "Now"}</span>
+              </div>
+            </div>
+
+            {/* Error Rate & RPS KPIs */}
+            <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5">
+              <div className="p-3 rounded-xl bg-[#07090e] border border-white/5">
+                <span className="text-[10px] text-slate-400 font-medium block">HTTP 5xx Error Rate Peak</span>
+                <span className="text-2xl font-extrabold text-red-400 mt-0.5 block">18.4%</span>
+                <span className="text-[10px] text-red-400/80">Threshold &gt; 1.0% breached</span>
+              </div>
+              <div className="p-3 rounded-xl bg-[#07090e] border border-white/5">
+                <span className="text-[10px] text-slate-400 font-medium block">Cluster Throughput</span>
+                <span className="text-2xl font-extrabold text-cyan-300 mt-0.5 block">3,420 RPS</span>
+                <span className="text-[10px] text-slate-400">Stable traffic distribution</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Active Incidents Feed */}
       <div className="space-y-4">
@@ -195,9 +305,20 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
                   </p>
 
                   <div className="space-y-1.5 pt-2">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
-                      Emergency Killswitch Runbook
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                        Emergency Killswitch Runbook
+                      </span>
+                      {inc.correlated_pr_id && (
+                        <button
+                          onClick={() => setShowTerminalPrId(inc.correlated_pr_id!)}
+                          className="flex items-center space-x-1 text-xs font-bold text-cyan-400 hover:text-cyan-300"
+                        >
+                          <Terminal className="w-3 h-3" />
+                          <span>Execute in Web Terminal</span>
+                        </button>
+                      )}
+                    </div>
                     <div className="relative group">
                       <pre className="p-3 rounded-lg bg-[#05070d] text-cyan-300 font-mono text-xs overflow-x-auto border border-white/10">
                         <code>{inc.remediation_runbook || inc.bob_analysis.details_json.emergency_killswitch}</code>
@@ -263,6 +384,16 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
           ))}
         </div>
       </div>
+
+      {/* Terminal Modal for Incident Killswitch */}
+      {showTerminalPrId && (
+        <TerminalModal
+          isOpen={!!showTerminalPrId}
+          onClose={() => setShowTerminalPrId(null)}
+          prNumber={145}
+          prId={showTerminalPrId}
+        />
+      )}
     </div>
   );
 };

@@ -1,12 +1,13 @@
 "use client";
 
 import React from "react";
-import { Shield, Sparkles, RefreshCw, PlusCircle, Activity, GitPullRequest } from "lucide-react";
+import { Shield, Sparkles, RefreshCw, PlusCircle, Activity, GitPullRequest, Search, Command } from "lucide-react";
 
 interface HeaderProps {
   onOpenSandbox: () => void;
   onRefresh: () => void;
   onResetDb: () => void;
+  onOpenCommandPalette: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
   loading: boolean;
@@ -18,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSandbox,
   onRefresh,
   onResetDb,
+  onOpenCommandPalette,
   activeTab,
   setActiveTab,
   loading,
@@ -38,11 +40,12 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="font-extrabold text-xl tracking-tight text-white">
                   Release<span className="text-[#06b6d4]">Guard</span>
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-500/20 text-[#38bdf8] border border-blue-500/30">
-                  AI Swarm
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-500/20 text-[#38bdf8] border border-blue-500/30 flex items-center space-x-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                  <span>IBM Bob Swarm</span>
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Autonomous DevSecOps & IBM Bob Release Governance</p>
+              <p className="text-xs text-slate-400">Autonomous DevSecOps & Release Governance</p>
             </div>
           </div>
 
@@ -101,8 +104,17 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </nav>
 
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-2.5">
+          {/* Action Buttons & Command Palette Trigger */}
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={onOpenCommandPalette}
+              className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-[#121826] hover:bg-[#1a2337] border border-[rgba(255,255,255,0.08)] text-slate-400 hover:text-white text-xs transition-colors"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span>Search / Quick Actions</span>
+              <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-slate-300 font-mono">⌘K</kbd>
+            </button>
+
             <button
               onClick={onResetDb}
               title="Reset Demo Data"
@@ -113,10 +125,10 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={onOpenSandbox}
-              className="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#0f62fe] to-[#06b6d4] text-white text-xs font-semibold hover:opacity-95 shadow-md shadow-cyan-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#0f62fe] to-[#06b6d4] text-white text-xs font-bold hover:opacity-95 shadow-md shadow-cyan-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>Test PR / Webhook Sandbox</span>
+              <span>Test Sandbox</span>
             </button>
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   GitBranch, 
   Send, 
@@ -14,7 +14,12 @@ import {
   Server, 
   AlertOctagon, 
   FileCheck,
-  ChevronRight
+  ChevronRight,
+  Play,
+  CheckCircle2,
+  Sparkles,
+  Zap,
+  Activity
 } from "lucide-react";
 
 interface WorkflowStep {
@@ -95,7 +100,7 @@ const STEPS: WorkflowStep[] = [
   },
   {
     step: 8,
-    label: "Post PR Comment & Status Check",
+    label: "Post PR Comment & Check",
     category: "Git",
     icon: MessageSquare,
     desc: "Publishes rich markdown summary and sets GitHub Commit Status Check (Success/Failure/Pending)."
@@ -116,14 +121,14 @@ const STEPS: WorkflowStep[] = [
   },
   {
     step: 11,
-    label: "Bob Incident Analysis Agent",
+    label: "Bob Incident Analysis",
     category: "Runtime",
     icon: AlertOctagon,
     desc: "On production anomaly (504 spike, memory leak), Bob agent isolates the offending PR and root cause."
   },
   {
     step: 12,
-    label: "Emergency Remediation Runbook",
+    label: "Remediation Runbook",
     category: "Runtime",
     icon: FileCheck,
     desc: "Generates one-click automated rollback and killswitch commands to restore system health."
@@ -132,63 +137,137 @@ const STEPS: WorkflowStep[] = [
 
 export const WorkflowArchitectureBanner: React.FC = () => {
   const [selectedStep, setSelectedStep] = useState<WorkflowStep>(STEPS[3]);
+  const [isSimulating, setIsSimulating] = useState<boolean>(false);
+  const [simStep, setSimStep] = useState<number>(0);
+  const [simLog, setSimLog] = useState<string>("");
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>("ALL");
+
+  const runEndToEndSimulation = () => {
+    if (isSimulating) return;
+    setIsSimulating(true);
+    setSimStep(1);
+
+    const stepDuration = 550;
+    STEPS.forEach((s, idx) => {
+      setTimeout(() => {
+        setSimStep(s.step);
+        setSelectedStep(s);
+        setSimLog(`[STEP ${s.step}/12] Executing ${s.label}: ${s.desc.substring(0, 80)}...`);
+        if (s.step === 12) {
+          setTimeout(() => {
+            setIsSimulating(false);
+            setSimLog("✅ Complete 12-stage workflow simulation finished successfully.");
+          }, 800);
+        }
+      }, idx * stepDuration);
+    });
+  };
+
+  const filteredSteps = STEPS.filter((s) => {
+    if (activeCategoryFilter === "ALL") return true;
+    return s.category.toUpperCase() === activeCategoryFilter.toUpperCase();
+  });
 
   return (
-    <div className="glass-panel p-6 mb-8 border border-[rgba(255,255,255,0.08)] bg-[#0d121d]/80 rounded-2xl relative overflow-hidden">
-      {/* Decorative gradient blur */}
-      <div className="absolute -top-24 -right-24 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="glass-panel p-6 mb-8 border border-[rgba(255,255,255,0.08)] bg-[#0d121d]/85 rounded-2xl relative overflow-hidden shadow-2xl">
+      {/* Decorative gradient background */}
+      <div className="absolute -top-32 -right-32 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-cyan-600/15 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between pb-5 border-b border-[rgba(255,255,255,0.06)] gap-3">
+      {/* Header Bar */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-5 border-b border-[rgba(255,255,255,0.06)] gap-4">
         <div>
-          <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-            <h2 className="text-lg font-bold text-white tracking-tight">
-              End-to-End ReleaseGuard & IBM Bob Architecture Pipeline
+          <div className="flex items-center space-x-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
+            <h2 className="text-lg font-bold text-white tracking-tight flex items-center space-x-2">
+              <span>End-to-End ReleaseGuard & IBM Bob Architecture Pipeline</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                12 Stages Live
+              </span>
             </h2>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            12-Stage Automated Workflow: from Developer PR opening to IBM Bob Multi-Agent Deliberation and Post-Deploy Incident Recovery
+          <p className="text-xs text-slate-400 mt-1">
+            Visual execution path: Developer PR → 7 Code Scanners → Composite Risk Engine → IBM Bob Swarm → SRE Incident Diagnosis
           </p>
         </div>
-        <div className="flex items-center space-x-2 text-xs">
-          <span className="px-2 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">
-            FastAPI Backend
-          </span>
-          <span className="px-2 py-1 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium">
-            IBM Bob Agents
-          </span>
-          <span className="px-2 py-1 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20 font-medium">
-            Next.js Frontend
-          </span>
+
+        <div className="flex items-center space-x-3 shrink-0">
+          <button
+            onClick={runEndToEndSimulation}
+            disabled={isSimulating}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg ${
+              isSimulating
+                ? "bg-cyan-500 text-black animate-pulse"
+                : "bg-gradient-to-r from-[#0f62fe] to-[#06b6d4] text-white hover:scale-105 shadow-cyan-500/20"
+            }`}
+          >
+            <Play className={`w-3.5 h-3.5 fill-current ${isSimulating ? "animate-spin" : ""}`} />
+            <span>{isSimulating ? `Simulating Stage ${simStep}/12...` : "▶ Run Live Simulation"}</span>
+          </button>
         </div>
       </div>
 
-      {/* Step Horizontal Scroller / Pipeline */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 pt-5 pb-4">
-        {STEPS.map((s) => {
+      {/* Category Filter Pills */}
+      <div className="flex items-center space-x-1.5 pt-4 overflow-x-auto pb-1 text-xs">
+        {["ALL", "GIT", "BACKEND", "AGENTS", "FRONTEND", "RUNTIME"].map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategoryFilter(cat)}
+            className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
+              activeCategoryFilter === cat
+                ? "bg-white text-slate-900 font-bold"
+                : "bg-[#141b2c] text-slate-400 hover:text-white border border-white/5"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Steps Pipeline Matrix */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 pt-4 pb-4">
+        {filteredSteps.map((s) => {
           const Icon = s.icon;
           const isSelected = selectedStep.step === s.step;
+          const isSimActive = isSimulating && simStep === s.step;
+          const isSimDone = isSimulating && simStep > s.step;
+
           return (
             <button
               key={s.step}
               onClick={() => setSelectedStep(s)}
-              className={`p-3 rounded-xl text-left transition-all border flex flex-col justify-between ${
-                isSelected
-                  ? "bg-gradient-to-b from-[#0f62fe]/20 to-[#06b6d4]/10 border-cyan-400/50 shadow-lg shadow-cyan-500/10 scale-[1.02]"
+              className={`p-3 rounded-xl text-left transition-all border flex flex-col justify-between relative overflow-hidden group ${
+                isSimActive
+                  ? "bg-cyan-950 border-cyan-400 ring-2 ring-cyan-400 shadow-xl shadow-cyan-500/30 scale-105"
+                  : isSelected
+                  ? "bg-gradient-to-b from-[#0f62fe]/25 to-[#06b6d4]/15 border-cyan-400/60 shadow-lg shadow-cyan-500/10 scale-[1.02]"
+                  : isSimDone
+                  ? "bg-[#101b2a] border-emerald-500/40 text-slate-300"
                   : "bg-[#121826]/70 hover:bg-[#172033] border-[rgba(255,255,255,0.06)] text-slate-400"
               }`}
             >
+              {isSimActive && (
+                <span className="absolute inset-0 bg-cyan-400/10 animate-pulse pointer-events-none" />
+              )}
               <div className="flex items-center justify-between mb-2">
                 <span
                   className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                    isSelected ? "bg-cyan-500 text-black font-extrabold" : "bg-white/10 text-slate-300"
+                    isSimActive
+                      ? "bg-cyan-400 text-black font-extrabold animate-bounce"
+                      : isSimDone
+                      ? "bg-emerald-500/30 text-emerald-300"
+                      : isSelected
+                      ? "bg-cyan-500 text-black font-extrabold"
+                      : "bg-white/10 text-slate-300"
                   }`}
                 >
                   Step {s.step}
                 </span>
-                <Icon className={`w-4 h-4 ${isSelected ? "text-cyan-400" : "text-slate-400"}`} />
+                <Icon
+                  className={`w-4 h-4 transition-transform group-hover:scale-110 ${
+                    isSimActive ? "text-cyan-300 animate-spin" : isSelected ? "text-cyan-400" : "text-slate-400"
+                  }`}
+                />
               </div>
               <p className={`text-xs font-semibold line-clamp-1 ${isSelected ? "text-white" : "text-slate-300"}`}>
                 {s.label}
@@ -198,15 +277,23 @@ export const WorkflowArchitectureBanner: React.FC = () => {
         })}
       </div>
 
+      {/* Live Simulation Ticker / Log */}
+      {isSimulating && (
+        <div className="p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/40 text-xs font-mono text-cyan-300 flex items-center space-x-2 animate-pulse">
+          <Zap className="w-4 h-4 text-cyan-400 shrink-0 animate-bounce" />
+          <span className="truncate">{simLog}</span>
+        </div>
+      )}
+
       {/* Active Step Deep-Dive Bar */}
-      <div className="mt-3 p-4 rounded-xl bg-[#090d16]/90 border border-[rgba(255,255,255,0.06)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="mt-3 p-4 rounded-xl bg-[#090d16]/95 border border-[rgba(255,255,255,0.08)] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-start space-x-3.5">
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0 mt-0.5">
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0 mt-0.5 shadow-md shadow-cyan-500/20">
             <selectedStep.icon className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/40">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-950/70 px-2 py-0.5 rounded border border-cyan-800/40">
                 Step {selectedStep.step} of 12 • {selectedStep.category}
               </span>
               <h3 className="text-sm font-bold text-white">{selectedStep.label}</h3>
@@ -228,7 +315,7 @@ export const WorkflowArchitectureBanner: React.FC = () => {
         <div className="shrink-0 flex items-center space-x-2 self-end md:self-center">
           <button
             onClick={() => {
-              const nextIdx = (selectedStep.step % STEPS.length);
+              const nextIdx = selectedStep.step % STEPS.length;
               setSelectedStep(STEPS[nextIdx]);
             }}
             className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-slate-300 hover:text-white border border-white/10 transition-colors"

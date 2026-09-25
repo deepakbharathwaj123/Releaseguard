@@ -8,6 +8,7 @@ import { RepoList, RepoItem } from "@/components/RepoList";
 import { PRDetailModal } from "@/components/PRDetailModal";
 import { ScannerSandboxModal } from "@/components/ScannerSandboxModal";
 import { IncidentHub } from "@/components/IncidentHub";
+import { CommandPalette } from "@/components/CommandPalette";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("prs");
@@ -18,6 +19,7 @@ export default function Home() {
   const [selectedPrId, setSelectedPrId] = useState<string | null>(null);
   const [selectedPrDetail, setSelectedPrDetail] = useState<any | null>(null);
   const [showSandbox, setShowSandbox] = useState<boolean>(false);
+  const [showCommandPalette, setShowCommandPalette] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
   const API_BASE = "http://localhost:8000";
@@ -117,6 +119,7 @@ export default function Home() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenSandbox={() => setShowSandbox(true)}
+        onOpenCommandPalette={() => setShowCommandPalette(true)}
         onRefresh={fetchAllData}
         onResetDb={handleResetDb}
         loading={loading}
@@ -216,6 +219,10 @@ export default function Home() {
             setSelectedPrDetail(null);
             setSelectedPrId(null);
           }}
+          onRefreshPr={() => {
+            if (selectedPrId) handleSelectPr(selectedPrId);
+            fetchAllData();
+          }}
         />
       )}
 
@@ -226,6 +233,18 @@ export default function Home() {
           onScanCompleted={handleScanCompleted}
         />
       )}
+
+      {/* Global Command Palette */}
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        prs={prs}
+        repos={repos}
+        onSelectPr={handleSelectPr}
+        onOpenSandbox={() => setShowSandbox(true)}
+        onNavigateTab={(tab) => setActiveTab(tab)}
+        onTriggerIncident={handleTriggerIncident}
+      />
 
       {/* Footer */}
       <footer className="border-t border-[rgba(255,255,255,0.06)] bg-[#090d16] py-6 text-center text-xs text-slate-500">

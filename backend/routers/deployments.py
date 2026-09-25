@@ -149,3 +149,51 @@ def resolve_incident(incident_id: str):
     conn.close()
 
     return {"status": "RESOLVED", "incident_id": incident_id, "resolved_at": now}
+
+@router.get("/telemetry")
+def get_live_telemetry():
+    """
+    Returns time-series telemetry metrics for live Grafana-style visual charts
+    in the SRE Incident Hub.
+    """
+    import random
+    from datetime import datetime, timedelta
+
+    points = []
+    base_time = datetime.now() - timedelta(minutes=30)
+    
+    # Generate 15 intervals of telemetry points
+    for i in range(16):
+        t = (base_time + timedelta(minutes=i*2)).strftime("%H:%M")
+        # Simulate normal vs spike
+        if i >= 10 and i <= 14:
+            p99 = random.randint(12000, 15500)
+            p95 = random.randint(8500, 11000)
+            p50 = random.randint(1200, 2400)
+            err_rate = round(random.uniform(15.2, 22.8), 1)
+            rps = random.randint(3200, 4800)
+        else:
+            p99 = random.randint(180, 260)
+            p95 = random.randint(95, 140)
+            p50 = random.randint(28, 45)
+            err_rate = round(random.uniform(0.01, 0.05), 2)
+            rps = random.randint(2400, 3100)
+
+        points.append({
+            "timestamp": t,
+            "p50_latency_ms": p50,
+            "p95_latency_ms": p95,
+            "p99_latency_ms": p99,
+            "error_rate_pct": err_rate,
+            "requests_per_sec": rps
+        })
+
+    return {
+        "cluster": "production-us-east-1",
+        "mesh": "Istio Service Mesh v1.21",
+        "active_version": "v4.2.1-rc1",
+        "canary_weight": 0,
+        "stable_weight": 100,
+        "points": points
+    }
+
