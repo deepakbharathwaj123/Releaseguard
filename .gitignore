@@ -118,3 +118,11 @@ build/
 # DO NOT REMOVE ABOVE PATTERNS
 # Add project-specific patterns below
 # ============================================
+
+Lib/
+Scripts/
+*.db
+*.sqlite
+*.sqlite3
+frontend/node_modules/
+frontend/.next/
