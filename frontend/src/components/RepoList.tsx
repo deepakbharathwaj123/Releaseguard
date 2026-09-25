@@ -7,10 +7,12 @@ import {
   Radio, 
   GitPullRequest, 
   ShieldCheck, 
-  ShieldAlert, 
   Copy, 
   Check, 
-  ExternalLink 
+  ExternalLink,
+  Lock,
+  Zap,
+  ArrowRight
 } from "lucide-react";
 
 export interface RepoItem {
@@ -43,28 +45,32 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
   return (
     <div className="space-y-6">
       {/* Webhook Configuration Banner */}
-      <div className="glass-panel p-5 rounded-2xl bg-gradient-to-r from-blue-950/40 to-slate-900 border border-[rgba(255,255,255,0.08)] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center space-x-2">
-            <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-            <h3 className="text-sm font-bold text-white">ReleaseGuard Live GitHub Webhook Listener</h3>
+      <div className="glass-card p-6 relative overflow-hidden bg-gradient-to-r from-blue-950/40 via-[#0a0f1e] to-cyan-950/30 border border-cyan-500/20 shadow-xl">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+          <div className="space-y-1.5">
+            <div className="flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+              <h3 className="text-base font-extrabold text-white tracking-tight">
+                ReleaseGuard GitHub Live Webhook Ingestion Listener
+              </h3>
+            </div>
+            <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+              Add this payload URL in your GitHub repo settings under <code className="text-cyan-300 bg-black/40 px-1.5 py-0.5 rounded">Settings → Webhooks → Add Webhook</code> with <code className="text-cyan-300 bg-black/40 px-1.5 py-0.5 rounded">pull_request</code> event.
+            </p>
           </div>
-          <p className="text-xs text-slate-300">
-            Configure this Webhook URL in your GitHub repository settings under <code>Webhooks → Add webhook</code> with <code>pull_request</code> event.
-          </p>
-        </div>
 
-        <div className="flex items-center space-x-2 w-full md:w-auto">
-          <code className="text-xs font-mono text-cyan-300 bg-[#090d16] px-3 py-1.5 rounded-lg border border-white/10 select-all overflow-x-auto">
-            {webhookUrl}
-          </code>
-          <button
-            onClick={copyWebhook}
-            className="p-2 rounded-lg bg-white/10 hover:bg-white/15 text-white transition-colors shrink-0"
-            title="Copy Webhook URL"
-          >
-            {copiedUrl ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-          </button>
+          <div className="flex items-center space-x-2 w-full md:w-auto">
+            <code className="text-xs font-mono text-cyan-300 bg-[#040711] px-4 py-2 rounded-xl border border-white/10 select-all overflow-x-auto shadow-inner">
+              {webhookUrl}
+            </code>
+            <button
+              onClick={copyWebhook}
+              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white transition-all hover:scale-105 shrink-0 shadow-md"
+              title="Copy Webhook URL"
+            >
+              {copiedUrl ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -74,43 +80,45 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
           <div
             key={repo.id}
             onClick={() => onSelectRepo(repo.id)}
-            className="glass-panel p-5 rounded-2xl bg-[#0d121d]/80 hover:bg-[#131a2b] border border-[rgba(255,255,255,0.08)] cursor-pointer transition-all hover:scale-[1.02] hover:border-cyan-400/40 flex flex-col justify-between space-y-4"
+            className="glass-card-interactive p-5 rounded-2xl flex flex-col justify-between space-y-4 group relative overflow-hidden"
           >
-            <div className="space-y-2.5">
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent" />
+
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center">
-                  <FolderGit2 className="w-4 h-4" />
+                <div className="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center shadow-md">
+                  <FolderGit2 className="w-5 h-5" />
                 </div>
-                <span className="flex items-center space-x-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                <span className="flex items-center space-x-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Webhook Active</span>
+                  <span>Webhook Heartbeat: OK</span>
                 </span>
               </div>
 
               <div>
-                <h4 className="text-sm font-bold text-white hover:text-cyan-300 transition-colors">
+                <h4 className="text-base font-extrabold text-white group-hover:text-cyan-300 transition-colors tracking-tight">
                   {repo.full_name}
                 </h4>
-                <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-slate-400 mt-1.5 line-clamp-2 leading-relaxed">
                   {repo.description}
                 </p>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between text-xs text-slate-400">
-              <div className="flex items-center space-x-1">
+            <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+              <div className="flex items-center space-x-1.5">
                 <GitBranch className="w-3.5 h-3.5 text-slate-500" />
-                <span className="font-mono text-[11px] text-slate-300">{repo.default_branch}</span>
+                <span className="font-mono text-[11px] text-slate-300 font-semibold">{repo.default_branch}</span>
               </div>
 
               <div className="flex items-center space-x-3">
-                <span className="flex items-center space-x-1">
+                <span className="flex items-center space-x-1 font-bold text-white">
                   <GitPullRequest className="w-3.5 h-3.5 text-blue-400" />
-                  <span className="font-bold text-white">{repo.open_prs_count} PRs</span>
+                  <span>{repo.open_prs_count} PRs</span>
                 </span>
-                <span className="flex items-center space-x-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                  <span className="font-bold text-cyan-400">Avg {repo.average_risk_score}</span>
+                <span className="flex items-center space-x-1 font-bold text-cyan-400">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Avg {repo.average_risk_score}</span>
                 </span>
               </div>
             </div>
