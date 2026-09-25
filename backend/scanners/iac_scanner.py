@@ -55,8 +55,18 @@ IAC_PATTERNS = [
         "title": "Unencrypted Cloud Storage Bucket",
         "description": "Storage resource provisioned without default server-side encryption enabled.",
         "remediation": "Enable AES256 or KMS server-side encryption on all cloud bucket and disk volume definitions."
+    },
+    {
+        "name": "Public Cloud Storage Bucket (public-read)",
+        "pattern": r"""(acl\s*=\s*['"]public-read['"]|acl\s*:\s*public-read)""",
+        "file_match": r"(\.tf|\.ya?ml)",
+        "severity": "CRITICAL",
+        "title": "Public Cloud Storage Bucket ACL (public-read)",
+        "description": "Cloud object storage bucket configured with public-read permissions, allowing unauthorized public access.",
+        "remediation": "Change bucket ACL to 'private' and enable S3 Block Public Access settings."
     }
 ]
+
 
 def scan_iac(diff_text: str, files_content: Dict[str, str] = None) -> List[Dict[str, Any]]:
     findings = []

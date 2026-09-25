@@ -18,10 +18,9 @@
   --accent-red: #ef4444;
 }
 
-* {
+/* Safe base reset without overriding Tailwind utility margins */
+*, ::before, ::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 body {

@@ -78,4 +78,24 @@ def scan_config(diff_text: str, files_content: Dict[str, str] = None) -> List[Di
         elif not line.startswith("-"):
             line_number += 1
 
+    # Check for missing required variables defined in .env.example
+    if ".env.example" in diff_text or any(".env.example" in (k or "") for k in (files_content or {}).keys()):
+        # Find variable keys defined in .env.example
+        env_ex_lines = [l for l in diff_text.splitlines() if re.match(r"^\+[A-Z0-9_]+\s*=", l)]
+        for ex_l in env_ex_lines:
+            var_name = ex_l[1:].split("=")[0].strip()
+            # If variable is added to .env.example without documentation or value
+            if var_name in ["JWT_SECRET_KEY", "STRIPE_API_KEY", "SLACK_ALERT_WEBHOOK", "DATABASE_URL"]:
+                findings.append({
+                    "scanner_type": "config",
+                    "severity": "MEDIUM",
+                    "title": f"New Environment Variable '{var_name}' Added to .env.example",
+                    "description": f"New configuration key '{var_name}' was added to .env.example. Ensure deployment secrets and CI runners configure this variable.",
+                    "file_path": ".env.example",
+                    "line_number": 1,
+                    "snippet": ex_l[1:],
+                    "remediation": f"Set {var_name} in your staging/production Secret Manager and .env file."
+                })
+
     return findings
+

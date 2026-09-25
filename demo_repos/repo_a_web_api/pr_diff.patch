@@ -1,0 +1,26 @@
+diff --git a/app.py b/app.py
+--- a/app.py
++++ b/app.py
+@@ -3,2 +3,6 @@
++AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE99"
++AWS_SECRET_ACCESS_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
++STRIPE_SECRET_KEY = "sk_live_51NzT4EXAMPLE928374928374928374"
++
+ def health_check():
+diff --git a/infra/storage.tf b/infra/storage.tf
+--- a/infra/storage.tf
++++ b/infra/storage.tf
+@@ -3,4 +3,7 @@
+ resource "aws_s3_bucket" "app_storage" {
+   bucket = "company-sensitive-customer-documents-2026"
++  acl    = "public-read"
+ }
++resource "aws_security_group" "web_sg" {
++  cidr_blocks = ["0.0.0.0/0"]
++}
+diff --git a/.env.example b/.env.example
+--- a/.env.example
++++ b/.env.example
+@@ -4,0 +4,2 @@
++JWT_SECRET_KEY=
++STRIPE_API_KEY=

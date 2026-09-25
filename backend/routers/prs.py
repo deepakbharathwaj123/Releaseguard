@@ -4,6 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, HTTPException
 from ..database import get_db
 from ..models import ManualScanRequest
+from ..github_service import fetch_github_open_prs, get_github_diff_text, normalize_repository_name
 from .webhooks import process_pr_pipeline
 
 router = APIRouter(prefix="/api/prs", tags=["pull_requests"])
@@ -175,6 +176,37 @@ def trigger_manual_scan(req: ManualScanRequest):
 
     result = process_pr_pipeline(repo_data, pr_data, req.diff_content)
     return result
+
+@router.post("/scan/github")
+def trigger_github_scan(payload: dict):
+    token = str((payload or {}).get("token", "")).strip()
+    repo_name = str((payload or {}).get("repo_name", "")).strip()
+    pr_number = int((payload or {}).get("pr_number", 0))
+
+    if not token or not repo_name or not pr_number:
+        raise HTTPException(status_code=400, detail="GitHub PAT, repo name, and PR number are required")
+
+    normalized_repo = normalize_repository_name(repo_name)
+    diff_text = get_github_diff_text(token, normalized_repo, pr_number)
+    metadata = fetch_github_open_prs(token, normalized_repo, 1)
+    pr_details = metadata[0] if metadata else {}
+
+    repo_data = {
+        "name": normalized_repo.split("/")[-1],
+        "full_name": normalized_repo,
+        "description": f"Imported from GitHub: {normalized_repo}"
+    }
+
+    pr_data = {
+        "number": pr_number,
+        "title": pr_details.get("title") or f"PR #{pr_number}",
+        "body": pr_details.get("body") or "Queued from GitHub repository import",
+        "user": {"login": (pr_details.get("user") or {}).get("login") or "github-user"},
+        "head": {"ref": (pr_details.get("head") or {}).get("ref") or "feature/live-scan"},
+        "base": {"ref": (pr_details.get("base") or {}).get("ref") or "main"}
+    }
+
+    return process_pr_pipeline(repo_data, pr_data, diff_text)
 
 @router.post("/{pr_id}/chat")
 def chat_with_bob_swarm(pr_id: str, payload: dict):

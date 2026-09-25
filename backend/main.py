@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import init_db
 from .seed_data import seed_database
-from .routers import webhooks, repos, prs, deployments, demo
+from .routers import webhooks, repos, prs, deployments, demo, github
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -12,6 +12,9 @@ async def lifespan(app: FastAPI):
     init_db()
     seed_database()
     yield
+
+PORT = int(os.getenv("PORT", "8001"))
+HOST = os.getenv("HOST", "127.0.0.1")
 
 app = FastAPI(
     title="ReleaseGuard AI Backend",
@@ -73,4 +76,4 @@ def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host=HOST, port=PORT, reload=True)

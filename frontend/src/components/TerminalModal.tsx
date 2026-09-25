@@ -27,8 +27,8 @@ export const TerminalModal: React.FC<TerminalModalProps> = ({
     setIsRunning(true);
     setLogs([]);
 
-    // Execute rollback endpoint
-    fetch(`http://localhost:8000/api/prs/${prId}/execute-rollback`, {
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
+    fetch(`${apiBase}/api/prs/${prId}/execute-rollback`, {
       method: "POST"
     })
       .then((res) => res.json())

@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
+import { AuthModal } from "@/components/AuthModal";
+import { TeamAuthTab } from "@/components/TeamAuthTab";
 import { WorkflowArchitectureBanner } from "@/components/WorkflowArchitectureBanner";
 import { PRList, PRSummary } from "@/components/PRList";
 import { RepoList, RepoItem } from "@/components/RepoList";
@@ -9,9 +11,12 @@ import { PRDetailModal } from "@/components/PRDetailModal";
 import { ScannerSandboxModal } from "@/components/ScannerSandboxModal";
 import { IncidentHub } from "@/components/IncidentHub";
 import { CommandPalette } from "@/components/CommandPalette";
+import { UserProfile } from "@/types/auth";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("prs");
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(true);
   const [repos, setRepos] = useState<RepoItem[]>([]);
   const [prs, setPrs] = useState<PRSummary[]>([]);
   const [deployments, setDeployments] = useState<any[]>([]);
@@ -22,7 +27,7 @@ export default function Home() {
   const [showCommandPalette, setShowCommandPalette] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const API_BASE = "http://localhost:8000";
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
 
   const fetchAllData = async () => {
     try {
@@ -60,6 +65,22 @@ export default function Home() {
     } catch (err) {
       console.error("Failed to load PR detail:", err);
     }
+  };
+
+  const handleLogin = (user: UserProfile) => {
+    setCurrentUser(user);
+    setIsAuthModalOpen(false);
+    setActiveTab("prs");
+  };
+
+  const handleSwitchUser = (user: UserProfile) => {
+    setCurrentUser(user);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setIsAuthModalOpen(true);
+    setActiveTab("auth");
   };
 
   const handleResetDb = async () => {
@@ -120,6 +141,10 @@ export default function Home() {
         setActiveTab={setActiveTab}
         onOpenSandbox={() => setShowSandbox(true)}
         onOpenCommandPalette={() => setShowCommandPalette(true)}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        currentUser={currentUser}
+        onSwitchUser={handleSwitchUser}
+        onLogout={handleLogout}
         onRefresh={fetchAllData}
         onResetDb={handleResetDb}
         loading={loading}
@@ -209,6 +234,16 @@ export default function Home() {
           />
         )}
 
+        {/* Tab 5: Access & Auth Governance */}
+        {activeTab === "auth" && (
+          <TeamAuthTab
+            currentUser={currentUser}
+            onOpenLoginModal={() => setIsAuthModalOpen(true)}
+            onSwitchUser={handleSwitchUser}
+            onLogout={handleLogout}
+          />
+        )}
+
       </main>
 
       {/* PR Detail Modal Inspector */}
@@ -233,6 +268,15 @@ export default function Home() {
           onScanCompleted={handleScanCompleted}
         />
       )}
+
+      {/* Professional Authentication Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        currentUser={currentUser}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
+      />
 
       {/* Global Command Palette */}
       <CommandPalette

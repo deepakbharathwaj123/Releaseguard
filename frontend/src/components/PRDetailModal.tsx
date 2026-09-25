@@ -124,7 +124,8 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
     setIsChatThinking(true);
 
     try {
-      const res = await fetch(`http://localhost:8000/api/prs/${pr.id}/chat`, {
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
+      const res = await fetch(`${apiBase}/api/prs/${pr.id}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: textToSend })
@@ -156,7 +157,8 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
     }
     setIsSubmittingOverride(true);
     try {
-      await fetch(`http://localhost:8000/api/prs/${pr.id}/override`, {
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
+      await fetch(`${apiBase}/api/prs/${pr.id}/override`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

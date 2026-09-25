@@ -164,7 +164,8 @@ export const ScannerSandboxModal: React.FC<ScannerSandboxModalProps> = ({
       await new Promise((r) => setTimeout(r, 600));
 
       setScanStep("4. Orchestrating IBM Bob Multi-Agent Swarm (Orchestrator, Security, Rollback)...");
-      const resp = await fetch("http://localhost:8000/api/prs/scan", {
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
+      const resp = await fetch(`${apiBase}/api/prs/scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

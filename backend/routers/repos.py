@@ -1,6 +1,7 @@
-from fastapi import APIRouter
-from typing import List
+from fastapi import APIRouter, HTTPException
+from typing import List, Optional
 from ..database import get_db
+from ..github_service import fetch_github_repo_metadata, normalize_repository_name
 
 router = APIRouter(prefix="/api/repos", tags=["repos"])
 
@@ -50,3 +51,39 @@ def get_repository(repo_id: str):
         return {"error": "Repository not found"}
 
     return dict(row)
+
+@router.post("/connect")
+def connect_github_repo(payload: dict):
+    token = (payload or {}).get("token", "").strip()
+    repo_name = (payload or {}).get("repo_name", "").strip()
+    if not token or not repo_name:
+        raise HTTPException(status_code=400, detail="GitHub repo name and PAT are required")
+
+    normalized = normalize_repository_name(repo_name)
+    metadata = fetch_github_repo_metadata(token, normalized)
+
+    repo_id = f"repo_{normalized.replace('/', '_')}"
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM repositories WHERE id = ?", (repo_id,))
+    exists = cursor.fetchone()
+
+    if not exists:
+        cursor.execute(
+            """
+            INSERT INTO repositories (id, name, full_name, description, default_branch, webhook_active, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))
+            """,
+            (repo_id, metadata.get("name", normalized.split("/")[-1]), metadata.get("full_name", normalized), metadata.get("description") or "Imported GitHub repository", metadata.get("default_branch") or "main")
+        )
+
+    conn.commit()
+    conn.close()
+
+    return {
+        "status": "connected",
+        "repo_id": repo_id,
+        "repo_name": normalized,
+        "default_branch": metadata.get("default_branch") or "main",
+        "description": metadata.get("description") or "Imported GitHub repository"
+    }

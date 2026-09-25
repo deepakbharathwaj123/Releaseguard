@@ -10,14 +10,17 @@ import {
   Terminal, 
   Play, 
   ShieldAlert, 
-  ArrowRight,
-  GitPullRequest,
-  Check,
-  Copy,
-  TrendingUp,
-  RefreshCw
+  ArrowRight, 
+  GitPullRequest, 
+  Check, 
+  Copy, 
+  TrendingUp, 
+  RefreshCw,
+  Lock,
+  UserCheck
 } from "lucide-react";
 import { TerminalModal } from "./TerminalModal";
+import { UserProfile } from "@/types/auth";
 
 interface Incident {
   id: string;
@@ -58,6 +61,8 @@ interface IncidentHubProps {
   onTriggerIncident: (type: string, title: string) => Promise<void>;
   onResolveIncident: (incidentId: string) => Promise<void>;
   onSelectPr: (prId: string) => void;
+  currentUser?: UserProfile | null;
+  onOpenAuthModal?: () => void;
 }
 
 export const IncidentHub: React.FC<IncidentHubProps> = ({
@@ -65,16 +70,20 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
   deployments,
   onTriggerIncident,
   onResolveIncident,
-  onSelectPr
+  onSelectPr,
+  currentUser,
+  onOpenAuthModal,
 }) => {
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
   const [copiedKillswitch, setCopiedKillswitch] = useState<string | null>(null);
   const [telemetryData, setTelemetryData] = useState<any | null>(null);
   const [showTerminalPrId, setShowTerminalPrId] = useState<string | null>(null);
+  const [permissionNotice, setPermissionNotice] = useState<string | null>(null);
 
   const fetchTelemetry = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/deployments/telemetry");
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
+      const res = await fetch(`${apiBase}/api/deployments/telemetry`);
       if (res.ok) {
         setTelemetryData(await res.json());
       }
@@ -88,10 +97,26 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
   }, []);
 
   const handleSimulate = async (type: string, title: string) => {
+    // Check permission
+    if (currentUser && !currentUser.permissions.canTriggerSimulations) {
+      setPermissionNotice("Permission Restricted: Requires SRE Commander, Security Lead, or Platform Architect role.");
+      setTimeout(() => setPermissionNotice(null), 3500);
+      return;
+    }
+
     setIsSimulating(true);
     await onTriggerIncident(type, title);
     await fetchTelemetry();
     setIsSimulating(false);
+  };
+
+  const handleResolve = async (incidentId: string) => {
+    if (currentUser && !currentUser.permissions.canExecuteRollback && !currentUser.permissions.canOverrideVerdict) {
+      setPermissionNotice("Permission Restricted: Requires SRE Commander or Security Lead role to resolve incidents.");
+      setTimeout(() => setPermissionNotice(null), 3500);
+      return;
+    }
+    await onResolveIncident(incidentId);
   };
 
   const copyKillswitch = (cmd: string, id: string) => {
@@ -117,11 +142,11 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
     .join(" ");
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in">
       {/* Simulation Controls Banner */}
-      <div className="glass-panel p-6 rounded-2xl bg-gradient-to-r from-red-950/40 via-[#0d121d] to-amber-950/20 border border-[rgba(255,255,255,0.08)] flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+      <div className="glass-panel p-6 rounded-2xl bg-gradient-to-r from-red-950/40 via-[#0d121d] to-amber-950/20 border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
         <div className="space-y-1.5">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <Flame className="w-5 h-5 text-red-400 animate-pulse" />
             <h3 className="text-base font-bold text-white">
               Deployment Telemetry & Incident Analysis Agent Hub (Steps 10–12)
@@ -132,51 +157,69 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
             onClick={() => handleSimulate("504_LATENCY_SPIKE", "P1: 504 Gateway Spike on Checkout API")}
             disabled={isSimulating}
-            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/40 text-xs font-bold transition-all disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/40 text-xs font-bold transition-all disabled:opacity-50 shadow-md shadow-red-500/10"
           >
             <AlertOctagon className="w-3.5 h-3.5" />
-            <span>Simulate 504 Gateway Spike</span>
+            <span>Simulate 504 Spike</span>
           </button>
 
           <button
             onClick={() => handleSimulate("DB_LOCK_TIMEOUT", "P2: Postgres Table Lock Queue Backpressure")}
             disabled={isSimulating}
-            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all disabled:opacity-50 shadow-md shadow-amber-500/10"
           >
             <Activity className="w-3.5 h-3.5" />
-            <span>Simulate DB Lock Outage</span>
+            <span>Simulate DB Lock</span>
           </button>
         </div>
       </div>
 
+      {/* Permission Restriction Notice */}
+      {permissionNotice && (
+        <div className="p-3.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-semibold flex items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>{permissionNotice}</span>
+          </div>
+          {onOpenAuthModal && (
+            <button
+              onClick={onOpenAuthModal}
+              className="px-2.5 py-1 rounded bg-amber-500 text-black font-bold text-xs"
+            >
+              Switch Role
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Live Telemetry Sparkline & Metrics Monitor */}
       {telemetryData && (
-        <div className="glass-panel p-5 rounded-2xl bg-[#0d121e] border border-[rgba(255,255,255,0.08)] space-y-4">
+        <div className="glass-panel p-5 rounded-2xl bg-[#0d121e] border border-white/10 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-cyan-400" />
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">
                 Production Real-Time Telemetry Stream ({telemetryData.cluster})
               </h4>
             </div>
-            <div className="flex items-center space-x-3 text-xs text-slate-400">
+            <div className="flex items-center gap-4 text-xs text-slate-400">
               <span>Mesh: <strong className="text-slate-200">{telemetryData.mesh}</strong></span>
               <span>Canary: <strong className="text-cyan-400">{telemetryData.canary_weight}%</strong></span>
               <span>Stable: <strong className="text-emerald-400">{telemetryData.stable_weight}%</strong></span>
               <button onClick={fetchTelemetry} className="p-1 hover:text-white" title="Refresh Telemetry">
-                <RefreshCw className="w-3 h-3" />
+                <RefreshCw className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* SVG Latency Chart */}
-            <div className="lg:col-span-2 p-3.5 rounded-xl bg-[#07090e] border border-white/5 space-y-2">
-              <div className="flex items-center justify-between text-[11px] text-slate-400">
+            <div className="lg:col-span-2 p-4 rounded-xl bg-[#07090e] border border-white/5 space-y-2">
+              <div className="flex items-center justify-between text-xs text-slate-400">
                 <span>p99 Latency Stream (Last 30 mins)</span>
                 <span className="text-red-400 font-bold">Max: {maxLatency.toLocaleString()} ms</span>
               </div>
@@ -204,24 +247,24 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
                   )}
                 </svg>
               </div>
-              <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+              <div className="flex justify-between text-[10px] text-slate-500 font-mono pt-1">
                 <span>{points[0]?.timestamp || "T-30m"}</span>
-                <span className="text-red-400">Deployment Spike Detected</span>
+                <span className="text-red-400 font-semibold">Deployment Anomaly Detected</span>
                 <span>{points[points.length - 1]?.timestamp || "Now"}</span>
               </div>
             </div>
 
             {/* Error Rate & RPS KPIs */}
             <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5">
-              <div className="p-3 rounded-xl bg-[#07090e] border border-white/5">
-                <span className="text-[10px] text-slate-400 font-medium block">HTTP 5xx Error Rate Peak</span>
+              <div className="p-3.5 rounded-xl bg-[#07090e] border border-white/5">
+                <span className="text-xs text-slate-400 font-medium block">HTTP 5xx Error Rate Peak</span>
                 <span className="text-2xl font-extrabold text-red-400 mt-0.5 block">18.4%</span>
-                <span className="text-[10px] text-red-400/80">Threshold &gt; 1.0% breached</span>
+                <span className="text-[11px] text-red-400/80">Threshold &gt; 1.0% breached</span>
               </div>
-              <div className="p-3 rounded-xl bg-[#07090e] border border-white/5">
-                <span className="text-[10px] text-slate-400 font-medium block">Cluster Throughput</span>
+              <div className="p-3.5 rounded-xl bg-[#07090e] border border-white/5">
+                <span className="text-xs text-slate-400 font-medium block">Cluster Throughput</span>
                 <span className="text-2xl font-extrabold text-cyan-300 mt-0.5 block">3,420 RPS</span>
-                <span className="text-[10px] text-slate-400">Stable traffic distribution</span>
+                <span className="text-[11px] text-slate-400">Canary traffic isolated</span>
               </div>
             </div>
           </div>
@@ -231,14 +274,14 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
       {/* Active Incidents Feed */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
             <span>Active Production Incidents ({activeIncidents.length})</span>
           </h3>
         </div>
 
         {activeIncidents.length === 0 ? (
-          <div className="glass-panel p-8 text-center rounded-2xl bg-[#0d121d]/60 border border-[rgba(255,255,255,0.06)]">
+          <div className="glass-panel p-8 text-center rounded-2xl bg-[#0d121d]/60 border border-white/10">
             <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
             <h4 className="text-sm font-bold text-white">All Systems Operational</h4>
             <p className="text-xs text-slate-400 mt-1">
@@ -252,18 +295,18 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
               className="glass-panel p-5 rounded-2xl bg-[#0f1422] border border-red-500/30 shadow-xl shadow-red-950/20 space-y-4"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
-                <div className="flex items-center space-x-2.5">
+                <div className="flex items-center gap-2.5">
                   <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/40 uppercase">
                     {inc.severity}
                   </span>
                   <h4 className="text-base font-bold text-white">{inc.title}</h4>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <span className="text-[11px] text-slate-400">{inc.repo_name}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-slate-400">{inc.repo_name}</span>
                   <button
-                    onClick={() => onResolveIncident(inc.id)}
-                    className="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all"
+                    onClick={() => handleResolve(inc.id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all shadow-sm shadow-emerald-500/20"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Resolve Incident</span>
@@ -273,16 +316,16 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
 
               {/* Correlation with PR */}
               {inc.correlated_pr_id && (
-                <div className="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-800/30 flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <GitPullRequest className="w-4 h-4 text-cyan-400" />
+                <div className="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-800/30 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <GitPullRequest className="w-4 h-4 text-cyan-400 shrink-0" />
                     <span className="text-xs text-slate-300">
                       Correlated Offending PR: <strong className="text-white">#{inc.pr_number} - {inc.pr_title}</strong> (by @{inc.pr_author})
                     </span>
                   </div>
                   <button
                     onClick={() => onSelectPr(inc.correlated_pr_id!)}
-                    className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center space-x-1"
+                    className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 shrink-0"
                   >
                     <span>View PR Diagnostics</span>
                     <ArrowRight className="w-3 h-3" />
@@ -293,7 +336,7 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
               {/* Bob Agent Analysis Output */}
               {inc.bob_analysis?.details_json && (
                 <div className="p-4 rounded-xl bg-[#090d16] border border-white/5 space-y-3">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
                     <h5 className="text-xs font-bold text-cyan-400 uppercase tracking-wider">
                       IBM Bob Incident Analysis Agent — Root Cause Diagnosis
@@ -312,9 +355,9 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
                       {inc.correlated_pr_id && (
                         <button
                           onClick={() => setShowTerminalPrId(inc.correlated_pr_id!)}
-                          className="flex items-center space-x-1 text-xs font-bold text-cyan-400 hover:text-cyan-300"
+                          className="flex items-center gap-1 text-xs font-bold text-cyan-400 hover:text-cyan-300"
                         >
-                          <Terminal className="w-3 h-3" />
+                          <Terminal className="w-3.5 h-3.5" />
                           <span>Execute in Web Terminal</span>
                         </button>
                       )}
@@ -350,7 +393,7 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
 
       {/* Deployment Monitoring List (Step 10) */}
       <div className="space-y-4">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
           <Server className="w-4 h-4 text-blue-400" />
           <span>Active Deployments & Releases (Step 10)</span>
         </h3>
@@ -359,7 +402,7 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
           {deployments.map((dep) => (
             <div
               key={dep.id}
-              className="glass-panel p-4 rounded-xl bg-[#0d121d]/80 border border-[rgba(255,255,255,0.06)] space-y-2.5"
+              className="glass-panel p-4 rounded-xl bg-[#0d121d]/80 border border-white/5 space-y-2.5"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono font-bold text-white">{dep.version}</span>
@@ -370,13 +413,13 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
 
               <div>
                 <p className="text-xs font-semibold text-slate-300">{dep.repo_name}</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-400 mt-0.5">
                   Environment: <strong className="text-slate-200 capitalize">{dep.environment}</strong>
                 </p>
               </div>
 
               {dep.pr_title && (
-                <div className="text-[11px] text-cyan-400/90 truncate pt-1 border-t border-white/5">
+                <div className="text-xs text-cyan-400/90 truncate pt-1 border-t border-white/5">
                   PR #{dep.pr_number}: {dep.pr_title}
                 </div>
               )}
