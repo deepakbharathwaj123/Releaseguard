@@ -100,11 +100,24 @@ def seed_database():
     conn = get_db()
     cursor = conn.cursor()
 
-    # Check if already seeded
+    # Ensure the app always boots with demo data when the DB is empty or partially initialized.
     cursor.execute("SELECT COUNT(*) as count FROM repositories")
-    if cursor.fetchone()["count"] > 0:
+    repo_count = cursor.fetchone()["count"]
+    cursor.execute("SELECT COUNT(*) as count FROM pull_requests")
+    pr_count = cursor.fetchone()["count"]
+
+    if repo_count > 0 and pr_count > 0:
         conn.close()
         return
+
+    # Rebuild a clean starter dataset so health checks and dashboard views always show live data.
+    cursor.execute("DELETE FROM incidents")
+    cursor.execute("DELETE FROM deployments")
+    cursor.execute("DELETE FROM pr_comments")
+    cursor.execute("DELETE FROM agent_outputs")
+    cursor.execute("DELETE FROM findings")
+    cursor.execute("DELETE FROM pull_requests")
+    cursor.execute("DELETE FROM repositories")
 
     now = datetime.now()
 

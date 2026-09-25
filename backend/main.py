@@ -2,7 +2,7 @@ import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .database import init_db
+from .database import get_db, init_db
 from .seed_data import seed_database
 from .routers import webhooks, repos, prs, deployments, demo, github
 
@@ -68,9 +68,20 @@ def root():
 
 @app.get("/api/health")
 def health_check():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as repo_count FROM repositories")
+    repo_count = cursor.fetchone()["repo_count"]
+    cursor.execute("SELECT COUNT(*) as pr_count FROM pull_requests")
+    pr_count = cursor.fetchone()["pr_count"]
+    conn.close()
+
     return {
         "status": "healthy",
         "database": "connected",
+        "seeded_data_loaded": repo_count > 0 and pr_count > 0,
+        "repositories": repo_count,
+        "pull_requests": pr_count,
         "ibm_watsonx_mode": "active" if os.getenv("IBM_CLOUD_API_KEY") and len(os.getenv("IBM_CLOUD_API_KEY")) > 10 and "DO_NOT_COMMIT" not in os.getenv("IBM_CLOUD_API_KEY") else "simulated_local_engine"
     }
 
