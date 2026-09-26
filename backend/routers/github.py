@@ -28,8 +28,15 @@ def authorize_github_repo(payload: dict):
     if not token or not repo_name:
         raise HTTPException(status_code=400, detail="GitHub repo name and PAT are required")
 
-    normalized = normalize_repository_name(repo_name)
-    metadata = fetch_github_repo_metadata(token, normalized)
+    try:
+        normalized = normalize_repository_name(repo_name)
+        metadata = fetch_github_repo_metadata(token, normalized)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=403, detail=f"GitHub authentication failed: {exc}") from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"GitHub repository lookup failed: {exc}") from exc
 
     repo_id = f"repo_{normalized.replace('/', '_')}"
     conn = get_db()
@@ -83,8 +90,16 @@ def scan_github_pr(payload: dict):
     if not token or not repo_name:
         raise HTTPException(status_code=400, detail="GitHub PAT and repo name are required")
 
-    normalized_repo = normalize_repository_name(repo_name)
-    metadata = fetch_github_open_prs(token, normalized_repo, 5)
+    try:
+        normalized_repo = normalize_repository_name(repo_name)
+        metadata = fetch_github_open_prs(token, normalized_repo, 5)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=403, detail=f"GitHub PAT access failed: {exc}") from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"GitHub repo lookup failed: {exc}") from exc
+
     pr_details = metadata[0] if metadata else {}
 
     if pr_number <= 0 and pr_details:
@@ -93,7 +108,12 @@ def scan_github_pr(payload: dict):
     if pr_number <= 0:
         raise HTTPException(status_code=400, detail="No open PR number was found for this repo. Add a valid PR number or open a PR first.")
 
-    diff_text = get_github_diff_text(token, normalized_repo, pr_number)
+    try:
+        diff_text = get_github_diff_text(token, normalized_repo, pr_number)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=403, detail=f"GitHub PR access failed: {exc}") from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"GitHub diff lookup failed: {exc}") from exc
 
     repo_data = {
         "name": normalized_repo.split("/")[-1],

@@ -1,6 +1,9 @@
 import os
 import sqlite3
 
+import pytest
+from fastapi import HTTPException
+
 from backend.routers.github import authorize_github_repo, scan_github_pr
 
 
@@ -80,3 +83,27 @@ def test_scan_uses_latest_open_pr_when_no_pr_number_is_given(monkeypatch):
     assert result['status'] == 'ok'
     assert result['pr_number'] == 7
     assert result['risk_level'] == 'MEDIUM'
+
+
+def test_authorize_rejects_bad_repo_format_with_http_400(monkeypatch):
+    monkeypatch.setattr('backend.routers.github.normalize_repository_name', lambda repo_name: (_ for _ in ()).throw(ValueError('Use the format owner/repo (for example: octo/demo-app)')))
+
+    with pytest.raises(HTTPException) as exc:
+        authorize_github_repo({'token': 'abc', 'repo_name': 'bad-format'})
+
+    assert exc.value.status_code == 400
+    assert 'owner/repo' in str(exc.value.detail)
+
+
+def test_scan_rejects_github_token_permission_error(monkeypatch):
+    monkeypatch.setattr('backend.routers.github.normalize_repository_name', lambda repo_name: 'acme/live-app')
+    monkeypatch.setattr(
+        'backend.routers.github.fetch_github_open_prs',
+        lambda token, repo_name, limit=5: (_ for _ in ()).throw(RuntimeError('Resource not accessible by personal access token')),
+    )
+
+    with pytest.raises(HTTPException) as exc:
+        scan_github_pr({'token': 'bad-token', 'repo_name': 'acme/live-app', 'pr_number': 2})
+
+    assert exc.value.status_code == 403
+    assert 'personal access token' in str(exc.value.detail).lower()
