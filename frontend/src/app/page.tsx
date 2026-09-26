@@ -10,6 +10,7 @@ import { RepoList, RepoItem } from "@/components/RepoList";
 import { PRDetailModal } from "@/components/PRDetailModal";
 import { ScannerSandboxModal } from "@/components/ScannerSandboxModal";
 import { IncidentHub } from "@/components/IncidentHub";
+import { ProjectAgentPanel } from "@/components/ProjectAgentPanel";
 import { CommandPalette } from "@/components/CommandPalette";
 import { UserProfile } from "@/types/auth";
 
@@ -26,12 +27,14 @@ export default function Home() {
   const [showSandbox, setShowSandbox] = useState<boolean>(false);
   const [showCommandPalette, setShowCommandPalette] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
 
   const fetchAllData = async () => {
     try {
       setLoading(true);
+      setApiError(null);
       const [reposRes, prsRes, depsRes, incsRes] = await Promise.all([
         fetch(`${API_BASE}/api/repos`),
         fetch(`${API_BASE}/api/prs`),
@@ -45,6 +48,7 @@ export default function Home() {
       if (incsRes.ok) setIncidents(await incsRes.json());
     } catch (err) {
       console.error("Error fetching data from ReleaseGuard API:", err);
+      setApiError("ReleaseGuard backend is offline or unreachable. Start the API server on http://localhost:8001 to restore dashboard data.");
     } finally {
       setLoading(false);
     }
@@ -104,6 +108,27 @@ export default function Home() {
     }
   };
 
+  const handleDeleteRepo = async (repoId: string) => {
+    const repo = repos.find((item) => item.id === repoId);
+    const repoName = repo?.full_name || repo?.name || "this repository";
+
+    if (!confirm(`Delete ${repoName} from the ReleaseGuard database and dashboard?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/repos/${repoId}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.detail || "Failed to delete repository");
+      }
+      await fetchAllData();
+    } catch (err) {
+      console.error("Delete repo failed:", err);
+      alert(err instanceof Error ? err.message : "Failed to delete repository");
+    }
+  };
+
   const handleTriggerIncident = async (type: string, title: string) => {
     try {
       const defaultRepo = repos[0]?.id || "repo_core_banking";
@@ -144,7 +169,7 @@ export default function Home() {
   const blockedCount = prs.filter((p) => p.risk_level === "CRITICAL" || p.verdict === "NO-GO").length;
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-black">
+    <div className="min-h-screen bg-[#07090e] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black">
       {/* Top Header */}
       <Header
         activeTab={activeTab}
@@ -163,8 +188,13 @@ export default function Home() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        
+      <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8 space-y-6 sm:space-y-8">
+        {apiError && (
+          <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+            {apiError}
+          </div>
+        )}
+
         {/* End-to-End Workflow Pipeline Visualizer Banner */}
         <WorkflowArchitectureBanner />
 
@@ -184,26 +214,27 @@ export default function Home() {
             onSelectRepo={(repoId) => {
               setActiveTab("prs");
             }}
+            onDeleteRepo={handleDeleteRepo}
           />
         )}
 
         {/* Tab 3: Dedicated Workflow Engine View */}
         {activeTab === "workflow" && (
           <div className="space-y-6">
-            <div className="glass-panel p-6 rounded-2xl bg-[#0d121d]/90 border border-white/10 space-y-4">
-              <h3 className="text-lg font-bold text-white">
+            <div className="glass-card p-6 rounded-2xl bg-[#0d121d]/90 border border-white/10 space-y-5">
+              <h3 className="text-xl font-bold text-white">
                 ReleaseGuard DevSecOps & Multi-Agent Swarm Specifications
               </h3>
-              <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
+              <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
                 ReleaseGuard is an autonomous gatekeeper that intercepts pull requests via GitHub webhooks, runs 7 static code & architecture scanners, computes normalized risk scores, and orchestrates an IBM Bob multi-agent swarm before code reaches production.
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                <div className="p-4 rounded-xl bg-[#121826] border border-white/5 space-y-2">
-                  <h4 className="text-xs font-bold text-cyan-400 uppercase tracking-wider">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
+                <div className="p-5 rounded-xl bg-[#121826] border border-white/5 space-y-3">
+                  <h4 className="text-sm font-bold text-cyan-400 uppercase tracking-wider">
                     7-Category Static Scanners
                   </h4>
-                  <ul className="text-xs text-slate-400 space-y-1">
+                  <ul className="text-sm text-slate-300 space-y-2">
                     <li>• <strong>Secrets:</strong> AWS/IBM/Stripe keys, Private keys, JWT tokens</li>
                     <li>• <strong>Config & Env:</strong> Debug mode enabled, permissive CORS, no timeouts</li>
                     <li>• <strong>IaC:</strong> Container running as root, 0.0.0.0/0 ingress, unpinned images</li>
@@ -214,11 +245,11 @@ export default function Home() {
                   </ul>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[#121826] border border-white/5 space-y-2">
-                  <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider">
+                <div className="p-5 rounded-xl bg-[#121826] border border-white/5 space-y-3">
+                  <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider">
                     IBM Bob Multi-Agent Swarm
                   </h4>
-                  <ul className="text-xs text-slate-400 space-y-1">
+                  <ul className="text-sm text-slate-300 space-y-2">
                     <li>• <strong>Release Orchestrator:</strong> Master Gatekeeper & GO/NO-GO verdict</li>
                     <li>• <strong>Security Subagent:</strong> SOC2, PCI-DSS, Cryptographic audit</li>
                     <li>• <strong>Infra/DevOps Subagent:</strong> Kubernetes Pod Security Standards</li>
@@ -244,7 +275,17 @@ export default function Home() {
           />
         )}
 
-        {/* Tab 5: Access & Auth Governance */}
+        {/* Tab 5: Project Agent */}
+        {activeTab === "agent" && (
+          <ProjectAgentPanel
+            repos={repos}
+            prs={prs}
+            incidents={incidents}
+            currentUser={currentUser}
+          />
+        )}
+
+        {/* Tab 6: Access & Auth Governance */}
         {activeTab === "auth" && (
           <TeamAuthTab
             currentUser={currentUser}
@@ -301,7 +342,7 @@ export default function Home() {
       />
 
       {/* Footer */}
-      <footer className="border-t border-[rgba(255,255,255,0.06)] bg-[#090d16] py-6 text-center text-xs text-slate-500">
+      <footer className="border-t border-[rgba(255,255,255,0.06)] bg-[#090d16] py-5 text-center text-sm text-slate-500">
         <p>ReleaseGuard AI Governance Platform • IBM watsonx / Bob Multi-Agent Hackathon Architecture</p>
       </footer>
     </div>

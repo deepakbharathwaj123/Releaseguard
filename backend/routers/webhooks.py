@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from ..database import get_db
+from ..github_review_service import trigger_review_for_repo
 from ..scanners import run_all_scanners
 from ..risk_engine import compute_risk_score
 from ..agents import (
@@ -163,15 +164,30 @@ async def github_webhook(request: Request, background_tasks: BackgroundTasks):
         pr_data = payload.get("pull_request", {})
         repo_data = payload.get("repository", {})
 
-        diff_text = payload.get("diff_content", "")
-        if not diff_text and "diff_url" in pr_data:
-            diff_text = "# Mock diff fetched from diff_url\n+ API_KEY = 'AKIA1234567890123456'"
+        if action not in {"opened", "reopened", "synchronize"}:
+            return {"status": "ignored", "event": event, "action": action}
 
-        result = process_pr_pipeline(repo_data, pr_data, diff_text)
+        repo_full_name = (repo_data or {}).get("full_name")
+        pr_number = int((pr_data or {}).get("number") or 0)
+        token = str((repo_data or {}).get("token") or "").strip() or str(os.getenv("GITHUB_TOKEN", "")).strip()
+
+        if not repo_full_name or not token or pr_number <= 0:
+            diff_text = payload.get("diff_content", "")
+            if not diff_text and "diff_url" in pr_data:
+                diff_text = "# Mock diff fetched from diff_url\n+ API_KEY = 'AKIA1234567890123456'"
+
+            result = process_pr_pipeline(repo_data, pr_data, diff_text)
+            return {
+                "status": "success",
+                "message": f"Processed PR #{result['pr_number']}",
+                "result": result
+            }
+
+        review_result = trigger_review_for_repo(repo_full_name, token, pr_number, repo_id=f"repo_{repo_full_name.replace('/', '_')}", pr_data=pr_data)
         return {
             "status": "success",
-            "message": f"Processed PR #{result['pr_number']}",
-            "result": result
+            "message": f"Reviewed PR #{review_result['pr_number']} via GitHub review bot",
+            "result": review_result,
         }
 
     return {"status": "ignored", "event": event}

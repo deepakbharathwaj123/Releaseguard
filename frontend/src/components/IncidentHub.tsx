@@ -247,7 +247,7 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
                   )}
                 </svg>
               </div>
-              <div className="flex justify-between text-[10px] text-slate-500 font-mono pt-1">
+              <div className="flex justify-between text-xs text-slate-500 font-mono pt-1">
                 <span>{points[0]?.timestamp || "T-30m"}</span>
                 <span className="text-red-400 font-semibold">Deployment Anomaly Detected</span>
                 <span>{points[points.length - 1]?.timestamp || "Now"}</span>
@@ -259,12 +259,12 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
               <div className="p-3.5 rounded-xl bg-[#07090e] border border-white/5">
                 <span className="text-xs text-slate-400 font-medium block">HTTP 5xx Error Rate Peak</span>
                 <span className="text-2xl font-extrabold text-red-400 mt-0.5 block">18.4%</span>
-                <span className="text-[11px] text-red-400/80">Threshold &gt; 1.0% breached</span>
+                <span className="text-xs text-red-400/80">Threshold &gt; 1.0% breached</span>
               </div>
               <div className="p-3.5 rounded-xl bg-[#07090e] border border-white/5">
                 <span className="text-xs text-slate-400 font-medium block">Cluster Throughput</span>
                 <span className="text-2xl font-extrabold text-cyan-300 mt-0.5 block">3,420 RPS</span>
-                <span className="text-[11px] text-slate-400">Canary traffic isolated</span>
+                <span className="text-xs text-slate-400">Canary traffic isolated</span>
               </div>
             </div>
           </div>
@@ -349,7 +349,7 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
 
                   <div className="space-y-1.5 pt-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                      <span className="text-xs text-slate-400 uppercase font-bold tracking-wider">
                         Emergency Killswitch Runbook
                       </span>
                       {inc.correlated_pr_id && (
@@ -406,7 +406,7 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono font-bold text-white">{dep.version}</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 uppercase">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 uppercase">
                   {dep.status}
                 </span>
               </div>

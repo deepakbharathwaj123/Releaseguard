@@ -3,14 +3,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import get_db, init_db
-from .seed_data import seed_database
-from .routers import webhooks, repos, prs, deployments, demo, github
+from .routers import webhooks, repos, prs, deployments, demo, github, agent
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize DB & Seed Demo Data if empty on startup
+    # Initialize DB without inserting seeded demo repositories.
     init_db()
-    seed_database()
     yield
 
 PORT = int(os.getenv("PORT", "8001"))
@@ -39,6 +37,7 @@ app.include_router(prs.router)
 app.include_router(deployments.router)
 app.include_router(demo.router)
 app.include_router(github.router)
+app.include_router(agent.router)
 
 @app.get("/")
 def root():
@@ -71,9 +70,9 @@ def root():
 def health_check():
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) as repo_count FROM repositories")
+    cursor.execute("SELECT COUNT(*) as repo_count FROM repositories WHERE webhook_active = 1")
     repo_count = cursor.fetchone()["repo_count"]
-    cursor.execute("SELECT COUNT(*) as pr_count FROM pull_requests")
+    cursor.execute("SELECT COUNT(*) as pr_count FROM pull_requests WHERE repo_id IN (SELECT id FROM repositories WHERE webhook_active = 1)")
     pr_count = cursor.fetchone()["pr_count"]
     conn.close()
 

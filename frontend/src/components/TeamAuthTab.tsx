@@ -51,25 +51,25 @@ export const TeamAuthTab: React.FC<TeamAuthTabProps> = ({
     switch (clearance) {
       case "TIER_1_RESTRICTED":
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-red-500/20 text-red-300 border border-red-500/40 uppercase tracking-wider">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-red-500/20 text-red-300 border border-red-500/40 uppercase tracking-wider">
             Tier 1: Master Clearance
           </span>
         );
       case "TIER_2_AUDIT":
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-500/20 text-blue-300 border border-blue-500/40 uppercase tracking-wider">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-500/20 text-blue-300 border border-blue-500/40 uppercase tracking-wider">
             Tier 2: Security Auditor
           </span>
         );
       case "TIER_3_ELEVATED":
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40 uppercase tracking-wider">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40 uppercase tracking-wider">
             Tier 3: Platform Architect
           </span>
         );
       default:
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-500/20 text-slate-300 border border-slate-500/40 uppercase tracking-wider">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-slate-500/20 text-slate-300 border border-slate-500/40 uppercase tracking-wider">
             Tier 4: Contributor
           </span>
         );
@@ -86,7 +86,7 @@ export const TeamAuthTab: React.FC<TeamAuthTabProps> = ({
               <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
               <h3 className="text-base font-extrabold text-white tracking-tight flex items-center gap-2">
                 <span>ReleaseGuard Identity & Role-Based Access Governance</span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                   Active IAM
                 </span>
               </h3>
@@ -181,7 +181,7 @@ export const TeamAuthTab: React.FC<TeamAuthTabProps> = ({
 
                 {/* Session Token Bar */}
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                  <div className="flex items-center justify-between text-xs text-slate-400">
                     <span>OAuth Bearer Token</span>
                     <button
                       onClick={copyToken}
@@ -190,7 +190,7 @@ export const TeamAuthTab: React.FC<TeamAuthTabProps> = ({
                       {copiedToken ? "Copied!" : "Copy Token"}
                     </button>
                   </div>
-                  <code className="block p-2 rounded-lg bg-black/40 border border-white/10 text-[10px] text-slate-400 truncate font-mono">
+                  <code className="block p-2 rounded-lg bg-black/40 border border-white/10 text-xs text-slate-400 truncate font-mono">
                     {mockToken}
                   </code>
                 </div>
@@ -212,7 +212,7 @@ export const TeamAuthTab: React.FC<TeamAuthTabProps> = ({
             )}
           </div>
 
-          <div className="pt-4 border-t border-white/5 text-[11px] text-slate-400 flex items-center justify-between">
+          <div className="pt-4 border-t border-white/5 text-xs text-slate-400 flex items-center justify-between">
             <span>SSO Protocol: OIDC / SAML 2.0</span>
             <span className="text-cyan-400 font-mono">v3.8-gov</span>
           </div>
@@ -259,21 +259,21 @@ export const TeamAuthTab: React.FC<TeamAuthTabProps> = ({
                             {user.name}
                           </span>
                           {isCurrent && (
-                            <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-cyan-500 text-black">
+                            <span className="text-xs font-extrabold px-1.5 py-0.2 rounded bg-cyan-500 text-black">
                               CURRENT
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-300 font-medium truncate">
+                        <p className="text-xs text-slate-300 font-medium truncate">
                           {user.roleTitle}
                         </p>
-                        <p className="text-[10px] text-slate-400 truncate">
+                        <p className="text-xs text-slate-400 truncate">
                           {user.department}
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-[10px]">
+                    <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-xs">
                       <span className="text-slate-400">{user.clearanceLevel.replace("_", " ")}</span>
                       <span className={`font-bold flex items-center gap-1 ${isCurrent ? "text-cyan-300" : "text-slate-400 group-hover:text-white"}`}>
                         <span>{isCurrent ? "Active Role" : "Switch to Role"}</span>

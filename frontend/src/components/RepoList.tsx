@@ -11,7 +11,8 @@ import {
   ArrowRight,
   KeyRound,
   Rocket,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from "lucide-react";
 
 export interface RepoItem {
@@ -29,9 +30,10 @@ export interface RepoItem {
 interface RepoListProps {
   repos: RepoItem[];
   onSelectRepo: (repoId: string, repoFullName: string) => void;
+  onDeleteRepo?: (repoId: string) => void;
 }
 
-export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
+export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo, onDeleteRepo }) => {
   const [copiedUrl, setCopiedUrl] = useState<boolean>(false);
   const [repoInput, setRepoInput] = useState<string>("owner/repo-name");
   const [prNumberInput, setPrNumberInput] = useState<string>("1");
@@ -134,15 +136,15 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
       {/* Webhook Configuration Banner */}
       <div className="glass-card p-6 relative overflow-hidden bg-gradient-to-r from-blue-950/40 via-[#0a0f1e] to-cyan-950/30 border border-cyan-500/20 shadow-xl">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
               <h3 className="text-base font-extrabold text-white tracking-tight">
                 ReleaseGuard GitHub Live Webhook Ingestion Listener
               </h3>
             </div>
-            <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
-              Add this payload URL in your GitHub repo settings under <code className="text-cyan-300 bg-black/40 px-1.5 py-0.5 rounded">Settings → Webhooks → Add Webhook</code> with <code className="text-cyan-300 bg-black/40 px-1.5 py-0.5 rounded">pull_request</code> event.
+            <p className="text-sm text-slate-300 max-w-xl leading-relaxed">
+              Add this payload URL in your GitHub repo settings under <code className="text-cyan-300 bg-black/40 px-1.5 py-0.5 rounded text-xs">Settings → Webhooks → Add Webhook</code> with <code className="text-cyan-300 bg-black/40 px-1.5 py-0.5 rounded text-xs">pull_request</code> event.
             </p>
           </div>
 
@@ -164,12 +166,12 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
       <div className="glass-card p-5 rounded-2xl border border-cyan-500/20 bg-[#0d121d]/90">
         <div className="flex items-center justify-between gap-3 pb-4 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-black flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-black flex items-center justify-center">
               <KeyRound className="w-4 h-4" />
             </div>
             <div>
               <h3 className="text-sm font-extrabold text-white">Authorize GitHub Repository</h3>
-              <p className="text-[11px] text-slate-400">Use a GitHub PAT to connect a real repo and trigger ReleaseGuard.</p>
+              <p className="text-xs text-slate-400">Use a GitHub PAT to connect a real repo and trigger ReleaseGuard.</p>
             </div>
           </div>
           <button
@@ -186,37 +188,37 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="md:col-span-1">
-            <label className="text-[10px] uppercase tracking-[0.18em] text-slate-400 block mb-1.5">GitHub repo</label>
+            <label className="text-xs uppercase tracking-[0.14em] text-slate-400 block mb-1.5 font-semibold">GitHub repo</label>
             <input
               value={repoInput}
               onChange={(e) => setRepoInput(e.target.value)}
               placeholder="owner/repo-name"
-              className="w-full bg-[#070c14] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-cyan-400 outline-none"
+              className="w-full bg-[#070c14] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:border-cyan-400 outline-none"
             />
           </div>
           <div className="md:col-span-1">
-            <label className="text-[10px] uppercase tracking-[0.18em] text-slate-400 block mb-1.5">PR number</label>
+            <label className="text-xs uppercase tracking-[0.14em] text-slate-400 block mb-1.5 font-semibold">PR number</label>
             <input
               value={prNumberInput}
               onChange={(e) => setPrNumberInput(e.target.value)}
               placeholder="1"
-              className="w-full bg-[#070c14] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-cyan-400 outline-none"
+              className="w-full bg-[#070c14] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:border-cyan-400 outline-none"
             />
           </div>
           <div className="md:col-span-1">
-            <label className="text-[10px] uppercase tracking-[0.18em] text-slate-400 block mb-1.5">GitHub PAT</label>
+            <label className="text-xs uppercase tracking-[0.14em] text-slate-400 block mb-1.5 font-semibold">GitHub PAT</label>
             <input
               type="password"
               value={tokenInput}
               onChange={(e) => setTokenInput(e.target.value)}
               placeholder="ghp_xxxxxxxxx"
-              className="w-full bg-[#070c14] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-cyan-400 outline-none"
+              className="w-full bg-[#070c14] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:border-cyan-400 outline-none"
             />
           </div>
         </div>
 
         {authStatus && (
-          <div className="mt-4 flex items-start gap-2 rounded-xl border border-cyan-500/20 bg-cyan-500/5 px-3 py-2 text-xs text-cyan-200">
+          <div className="mt-4 flex items-start gap-2 rounded-xl border border-cyan-500/20 bg-cyan-500/5 px-3 py-2.5 text-sm text-cyan-200">
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
             <p className="leading-relaxed">{authStatus}</p>
           </div>
@@ -227,7 +229,7 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
         <div className="flex items-center justify-between gap-3 pb-4 border-b border-white/10">
           <div>
             <h3 className="text-sm font-extrabold text-white">Git identity & login setup</h3>
-            <p className="text-[11px] text-slate-400">Set your GitHub username and repo remote so local push/pull commands work properly.</p>
+            <p className="text-xs text-slate-400">Set your GitHub username and repo remote so local push/pull commands work properly.</p>
           </div>
           <button
             onClick={handlePrepareGitLogin}
@@ -240,26 +242,26 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] uppercase tracking-[0.18em] text-slate-400 block mb-1.5">GitHub username</label>
+            <label className="text-xs uppercase tracking-[0.14em] text-slate-400 block mb-1.5 font-semibold">GitHub username</label>
             <input
               value={gitUsername}
               onChange={(e) => setGitUsername(e.target.value)}
-              className="w-full bg-[#070c14] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-emerald-400 outline-none"
+              className="w-full bg-[#070c14] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:border-emerald-400 outline-none"
             />
           </div>
           <div>
-            <label className="text-[10px] uppercase tracking-[0.18em] text-slate-400 block mb-1.5">Git email</label>
+            <label className="text-xs uppercase tracking-[0.14em] text-slate-400 block mb-1.5 font-semibold">Git email</label>
             <input
               type="email"
               value={gitEmail}
               onChange={(e) => setGitEmail(e.target.value)}
-              className="w-full bg-[#070c14] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-emerald-400 outline-none"
+              className="w-full bg-[#070c14] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:border-emerald-400 outline-none"
             />
           </div>
         </div>
 
         {gitLoginStatus && (
-          <div className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs text-emerald-200">
+          <div className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-3 py-2.5 text-sm text-emerald-200">
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
             <p className="leading-relaxed">{gitLoginStatus}</p>
           </div>
@@ -281,7 +283,7 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
                 <div className="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center shadow-md">
                   <FolderGit2 className="w-5 h-5" />
                 </div>
-                <span className="flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                <span className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span>Webhook OK</span>
                 </span>
@@ -300,7 +302,7 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
             <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
               <div className="flex items-center gap-1.5">
                 <GitBranch className="w-3.5 h-3.5 text-slate-500" />
-                <span className="font-mono text-[11px] text-slate-300 font-semibold">{repo.default_branch}</span>
+                <span className="font-mono text-xs text-slate-300 font-semibold">{repo.default_branch}</span>
               </div>
 
               <div className="flex items-center gap-3">
@@ -319,6 +321,21 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
               <span>View & Filter PRs</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </div>
+
+            {onDeleteRepo && (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onDeleteRepo(repo.id);
+                }}
+                className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/30 bg-red-600/10 px-2.5 py-2 text-[11px] font-semibold text-red-200 hover:bg-red-600/20 transition-colors"
+                title={`Delete ${repo.full_name}`}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete repo
+              </button>
+            )}
           </div>
         ))}
       </div>

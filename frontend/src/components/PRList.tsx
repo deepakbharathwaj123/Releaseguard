@@ -90,9 +90,9 @@ export const PRList: React.FC<PRListProps> = ({
   const safeCount = prs.filter((p) => p.risk_level === "LOW").length;
   const avgRisk = prs.length ? Math.round(prs.reduce((acc, curr) => acc + curr.risk_score, 0) / prs.length) : 0;
 
-  // Modern SVG circular gauge component
+  // SVG circular gauge component
   const renderRiskGauge = (score: number, level: string) => {
-    const radius = 22;
+    const radius = 24;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (score / 100) * circumference;
 
@@ -110,19 +110,19 @@ export const PRList: React.FC<PRListProps> = ({
     }
 
     return (
-      <div className="relative w-14 h-14 shrink-0 flex items-center justify-center">
-        <svg className="w-14 h-14 -rotate-90 transform" viewBox="0 0 56 56">
+      <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
+        <svg className="w-16 h-16 -rotate-90 transform" viewBox="0 0 60 60">
           <circle
-            cx="28"
-            cy="28"
+            cx="30"
+            cy="30"
             r={radius}
             stroke="rgba(255, 255, 255, 0.08)"
             strokeWidth="4"
             fill="transparent"
           />
           <circle
-            cx="28"
-            cy="28"
+            cx="30"
+            cy="30"
             r={radius}
             stroke={strokeColor}
             strokeWidth="4"
@@ -137,8 +137,8 @@ export const PRList: React.FC<PRListProps> = ({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="text-xs font-black tracking-tight text-white leading-none">{score}</span>
-          <span className="text-[8px] font-bold text-slate-400 uppercase leading-none mt-0.5">Risk</span>
+          <span className="text-sm font-black tracking-tight text-white leading-none">{score}</span>
+          <span className="text-[10px] font-bold text-slate-400 uppercase leading-none mt-0.5">Risk</span>
         </div>
       </div>
     );
@@ -148,21 +148,21 @@ export const PRList: React.FC<PRListProps> = ({
     switch (verdict) {
       case "GO":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm shadow-emerald-500/20">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm shadow-emerald-500/20">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
             <span>GO: APPROVED</span>
           </span>
         );
       case "CONDITIONAL":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-sm shadow-amber-500/20">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-sm shadow-amber-500/20">
             <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
             <span>CONDITIONAL</span>
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-500/15 text-red-300 border border-red-500/40 shadow-sm shadow-red-500/20 animate-pulse">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-red-500/15 text-red-300 border border-red-500/40 shadow-sm shadow-red-500/20 animate-pulse">
             <XCircle className="w-3.5 h-3.5 text-red-400" />
             <span>NO-GO: BLOCKED</span>
           </span>
@@ -171,53 +171,53 @@ export const PRList: React.FC<PRListProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Top Stat Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass-card p-5 relative overflow-hidden group">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-400 font-semibold tracking-wide uppercase">Monitored PRs</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-              <GitPullRequest className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <GitPullRequest className="w-4.5 h-4.5" />
             </div>
           </div>
-          <p className="text-3xl font-black text-white mt-2 tracking-tight">{prs.length}</p>
-          <span className="text-xs text-slate-400 font-medium">Active Pull Requests</span>
+          <p className="text-4xl font-black text-white mt-2 tracking-tight">{prs.length}</p>
+          <span className="text-sm text-slate-400 font-medium">Active Pull Requests</span>
         </div>
 
         <div className="glass-card p-5 relative overflow-hidden group">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-400 font-semibold tracking-wide uppercase">Critical Blockers</span>
-            <div className="w-8 h-8 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
-              <ShieldAlert className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
+              <ShieldAlert className="w-4.5 h-4.5" />
             </div>
           </div>
-          <p className="text-3xl font-black text-red-400 mt-2 tracking-tight">{criticalCount}</p>
-          <span className="text-xs text-red-400/90 font-medium">Release Gates Locked</span>
+          <p className="text-4xl font-black text-red-400 mt-2 tracking-tight">{criticalCount}</p>
+          <span className="text-sm text-red-400/90 font-medium">Release Gates Locked</span>
         </div>
 
         <div className="glass-card p-5 relative overflow-hidden group">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-400 font-semibold tracking-wide uppercase">High Risk (Supervised)</span>
-            <div className="w-8 h-8 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400">
-              <AlertTriangle className="w-4 h-4" />
+            <span className="text-xs text-slate-400 font-semibold tracking-wide uppercase">High Risk</span>
+            <div className="w-9 h-9 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400">
+              <AlertTriangle className="w-4.5 h-4.5" />
             </div>
           </div>
-          <p className="text-3xl font-black text-orange-400 mt-2 tracking-tight">{highCount}</p>
-          <span className="text-xs text-orange-400/90 font-medium">Rollback Plan Armed</span>
+          <p className="text-4xl font-black text-orange-400 mt-2 tracking-tight">{highCount}</p>
+          <span className="text-sm text-orange-400/90 font-medium">Rollback Plan Armed</span>
         </div>
 
         <div className="glass-card p-5 relative overflow-hidden group">
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-400 font-semibold tracking-wide uppercase">Average Risk Index</span>
-            <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-              <ShieldCheck className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+              <ShieldCheck className="w-4.5 h-4.5" />
             </div>
           </div>
-          <p className="text-3xl font-black text-cyan-400 mt-2 tracking-tight">
-            {avgRisk}<span className="text-sm font-normal text-slate-500">/100</span>
+          <p className="text-4xl font-black text-cyan-400 mt-2 tracking-tight">
+            {avgRisk}<span className="text-base font-normal text-slate-500">/100</span>
           </p>
-          <span className="text-xs text-slate-400 font-medium">Across connected repositories</span>
+          <span className="text-sm text-slate-400 font-medium">Across connected repositories</span>
         </div>
       </div>
 
@@ -226,9 +226,9 @@ export const PRList: React.FC<PRListProps> = ({
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           
           {/* Risk Tier Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 bg-[#070c18] p-1.5 rounded-xl border border-white/5">
+          <div className="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0 bg-[#070c18] p-1.5 rounded-xl border border-white/5">
             {[
-              { id: "ALL", label: `All PRs (${prs.length})` },
+              { id: "ALL", label: `All (${prs.length})` },
               { id: "CRITICAL", label: `Critical (${criticalCount})` },
               { id: "HIGH", label: `High (${highCount})` },
               { id: "MEDIUM", label: `Medium` },
@@ -237,7 +237,7 @@ export const PRList: React.FC<PRListProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setFilterTier(tab.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`px-3.5 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
                   filterTier === tab.id
                     ? "bg-white text-slate-950 font-bold shadow-md"
                     : "text-slate-400 hover:text-white hover:bg-white/5"
@@ -258,28 +258,28 @@ export const PRList: React.FC<PRListProps> = ({
                 placeholder="Search title, author, #PR..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#0a0f1d] border border-white/10 rounded-xl pl-9 pr-8 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 shadow-inner"
+                className="w-full bg-[#0a0f1d] border border-white/10 rounded-xl pl-10 pr-8 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 shadow-inner"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-2.5 top-2 text-slate-400 hover:text-white"
+                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
 
             {/* Repo Dropdown */}
-            <div className="flex items-center gap-1 bg-[#0a0f1d] border border-white/10 rounded-xl px-2.5 py-1 text-xs">
-              <FolderGit2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+            <div className="flex items-center gap-1.5 bg-[#0a0f1d] border border-white/10 rounded-xl px-3 py-2 text-sm">
+              <FolderGit2 className="w-4 h-4 text-cyan-400 shrink-0" />
               <select
                 value={activeRepo || "ALL"}
                 onChange={(e) => {
                   if (onClearRepoFilter) onClearRepoFilter();
                   setLocalRepoFilter(e.target.value);
                 }}
-                className="bg-transparent text-white focus:outline-none text-xs cursor-pointer"
+                className="bg-transparent text-white focus:outline-none text-sm cursor-pointer"
               >
                 <option value="ALL" className="bg-[#0a0f1d] text-white">All Repositories</option>
                 {repoNames.map((r) => (
@@ -291,12 +291,12 @@ export const PRList: React.FC<PRListProps> = ({
             </div>
 
             {/* Sort Dropdown */}
-            <div className="flex items-center gap-1 bg-[#0a0f1d] border border-white/10 rounded-xl px-2.5 py-1 text-xs">
-              <ArrowUpDown className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+            <div className="flex items-center gap-1.5 bg-[#0a0f1d] border border-white/10 rounded-xl px-3 py-2 text-sm">
+              <ArrowUpDown className="w-4 h-4 text-blue-400 shrink-0" />
               <select
                 value={sortBy}
                 onChange={(e: any) => setSortBy(e.target.value)}
-                className="bg-transparent text-white focus:outline-none text-xs cursor-pointer"
+                className="bg-transparent text-white focus:outline-none text-sm cursor-pointer"
               >
                 <option value="risk_desc" className="bg-[#0a0f1d] text-white">Highest Risk</option>
                 <option value="risk_asc" className="bg-[#0a0f1d] text-white">Lowest Risk</option>
@@ -310,10 +310,10 @@ export const PRList: React.FC<PRListProps> = ({
 
         {/* Active Repo Filter Chip */}
         {activeRepo && (
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex items-center gap-2 text-sm">
             <span className="text-slate-400 font-medium">Active filter:</span>
-            <span className="px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1.5 font-mono">
-              <FolderGit2 className="w-3 h-3 text-cyan-400" />
+            <span className="px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1.5 font-mono text-xs">
+              <FolderGit2 className="w-3.5 h-3.5 text-cyan-400" />
               <span>{activeRepo}</span>
               <button
                 onClick={() => {
@@ -330,13 +330,13 @@ export const PRList: React.FC<PRListProps> = ({
         )}
       </div>
 
-      {/* PR Cards Grid */}
+      {/* PR Cards */}
       <div className="space-y-3">
         {filtered.length === 0 ? (
           <div className="glass-card p-12 text-center space-y-3">
             <GitPullRequest className="w-10 h-10 text-slate-500 mx-auto" />
-            <p className="text-sm font-semibold text-slate-300">No pull requests match the current filters.</p>
-            <p className="text-xs text-slate-500">
+            <p className="text-base font-semibold text-slate-300">No pull requests match the current filters.</p>
+            <p className="text-sm text-slate-500">
               Try clearing filters or search query to view all pull requests.
             </p>
             <button
@@ -346,7 +346,7 @@ export const PRList: React.FC<PRListProps> = ({
                 setLocalRepoFilter("ALL");
                 if (onClearRepoFilter) onClearRepoFilter();
               }}
-              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold transition-colors"
+              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-semibold transition-colors"
             >
               Reset All Filters
             </button>
@@ -372,38 +372,38 @@ export const PRList: React.FC<PRListProps> = ({
                   <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
                     {renderRiskGauge(pr.risk_score, pr.risk_level)}
 
-                    <div className="space-y-1.5 min-w-0 flex-1">
+                    <div className="space-y-2 min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[11px] font-mono font-bold text-cyan-300 bg-cyan-950/60 px-2.5 py-0.5 rounded-md border border-cyan-800/40">
+                        <span className="text-xs font-mono font-bold text-cyan-300 bg-cyan-950/60 px-2.5 py-1 rounded-md border border-cyan-800/40">
                           PR #{pr.pr_number}
                         </span>
-                        <span className="text-xs font-semibold text-slate-400 truncate">
+                        <span className="text-sm font-semibold text-slate-400 truncate">
                           {pr.repo_full_name || pr.repo_name}
                         </span>
-                        <span className="text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-full bg-white/5 text-slate-300 border border-white/10">
+                        <span className="text-xs uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-full bg-white/5 text-slate-300 border border-white/10">
                           {pr.risk_level}
                         </span>
                       </div>
 
-                      <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-cyan-300 transition-colors truncate">
+                      <h3 className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors truncate">
                         {pr.title}
                       </h3>
 
-                      <div className="flex items-center gap-4 text-xs text-slate-400 flex-wrap">
+                      <div className="flex items-center gap-4 text-sm text-slate-400 flex-wrap">
                         <div className="flex items-center gap-1.5">
-                          <div className="w-4 h-4 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-500 flex items-center justify-center text-[9px] font-bold text-white">
+                          <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-500 flex items-center justify-center text-[10px] font-bold text-white">
                             {pr.author.charAt(0).toUpperCase()}
                           </div>
                           <span>@{pr.author}</span>
                         </div>
 
-                        <div className="flex items-center gap-1 font-mono text-[11px] text-slate-300">
+                        <div className="flex items-center gap-1 font-mono text-xs text-slate-300">
                           <code className="bg-black/30 px-1.5 py-0.5 rounded text-cyan-300">{pr.source_branch}</code>
                           <span>→</span>
                           <code className="bg-black/30 px-1.5 py-0.5 rounded text-slate-400">{pr.target_branch}</code>
                         </div>
 
-                        <span className="text-xs text-slate-400">
+                        <span className="text-sm text-slate-400">
                           🛡️ <strong className="text-slate-200">{pr.findings_count}</strong> scanner findings
                         </span>
                       </div>
@@ -413,7 +413,7 @@ export const PRList: React.FC<PRListProps> = ({
                   {/* Right: Bob Verdict & Action Button */}
                   <div className="flex items-center gap-4 self-end sm:self-center shrink-0">
                     <div className="text-right">
-                      <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider block mb-1">
+                      <span className="text-xs text-slate-500 uppercase font-bold tracking-wider block mb-1.5">
                         IBM Bob Consensus
                       </span>
                       {getVerdictBadge(pr.verdict)}
@@ -424,10 +424,10 @@ export const PRList: React.FC<PRListProps> = ({
                         e.stopPropagation();
                         onSelectPr(pr.id);
                       }}
-                      className="flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-300 border border-white/10 hover:border-cyan-500/40 text-xs font-bold transition-all hover:scale-105 shadow-md"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-300 border border-white/10 hover:border-cyan-500/40 text-sm font-bold transition-all hover:scale-105 shadow-md"
                     >
                       <span>Inspect</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-cyan-400" />
+                      <ArrowUpRight className="w-4 h-4 text-cyan-400" />
                     </button>
                   </div>
                 </div>

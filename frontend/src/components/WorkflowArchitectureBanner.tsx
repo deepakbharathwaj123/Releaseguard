@@ -207,7 +207,7 @@ export const WorkflowArchitectureBanner: React.FC<WorkflowArchitectureBannerProp
   };
 
   return (
-    <div className="glass-panel p-6 border border-white/10 bg-[#0d1424]/90 rounded-2xl relative overflow-hidden shadow-2xl">
+    <div className="glass-card p-6 border border-white/10 bg-[#0d1424]/90 rounded-2xl relative overflow-hidden shadow-2xl">
       {/* Decorative gradient background */}
       <div className="absolute -top-32 -right-32 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-cyan-600/15 rounded-full blur-3xl pointer-events-none" />
@@ -219,12 +219,12 @@ export const WorkflowArchitectureBanner: React.FC<WorkflowArchitectureBannerProp
             <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
             <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
               <span>End-to-End ReleaseGuard & IBM Bob Architecture Pipeline</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+              <span className="text-xs font-bold tracking-wide px-2.5 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                 12 Stages Live
               </span>
             </h2>
           </div>
-          <p className="text-xs text-slate-300 mt-1">
+          <p className="text-sm text-slate-300 mt-1">
             Visual execution path: Developer PR → 7 Code Scanners → Composite Risk Engine → IBM Bob Swarm → SRE Incident Diagnosis
           </p>
         </div>
@@ -233,25 +233,25 @@ export const WorkflowArchitectureBanner: React.FC<WorkflowArchitectureBannerProp
           <button
             onClick={runEndToEndSimulation}
             disabled={isSimulating}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-lg ${
               isSimulating
                 ? "bg-cyan-500 text-black animate-pulse"
                 : "bg-gradient-to-r from-[#0f62fe] to-[#06b6d4] text-white hover:scale-105 shadow-cyan-500/20"
             }`}
           >
-            <Play className={`w-3.5 h-3.5 fill-current ${isSimulating ? "animate-spin" : ""}`} />
+            <Play className={`w-4 h-4 fill-current ${isSimulating ? "animate-spin" : ""}`} />
             <span>{isSimulating ? `Simulating Stage ${simStep}/12...` : "▶ Run Live Simulation"}</span>
           </button>
         </div>
       </div>
 
       {/* Category Filter Pills */}
-      <div className="flex items-center gap-2 pt-4 overflow-x-auto pb-1 text-xs">
+      <div className="flex items-center gap-2 pt-4 overflow-x-auto pb-1 text-sm">
         {["ALL", "GIT", "BACKEND", "AGENTS", "FRONTEND", "RUNTIME"].map((cat) => (
           <button
             key={cat}
             onClick={() => setActiveCategoryFilter(cat)}
-            className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
+            className={`px-3.5 py-1.5 rounded-xl font-semibold transition-all ${
               activeCategoryFilter === cat
                 ? "bg-white text-slate-900 font-bold shadow-md"
                 : "bg-[#141b2c] text-slate-400 hover:text-white border border-white/5"
@@ -274,7 +274,7 @@ export const WorkflowArchitectureBanner: React.FC<WorkflowArchitectureBannerProp
             <button
               key={s.step}
               onClick={() => setSelectedStep(s)}
-              className={`p-3 rounded-xl text-left transition-all border flex flex-col justify-between relative overflow-hidden group min-h-[88px] ${
+              className={`p-3.5 rounded-xl text-left transition-all border flex flex-col justify-between relative overflow-hidden group min-h-[96px] ${
                 isSimActive
                   ? "bg-cyan-950 border-cyan-400 ring-2 ring-cyan-400 shadow-xl shadow-cyan-500/30 scale-105"
                   : isSelected
@@ -289,7 +289,7 @@ export const WorkflowArchitectureBanner: React.FC<WorkflowArchitectureBannerProp
               )}
               <div className="flex items-center justify-between mb-2">
                 <span
-                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                  className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                     isSimActive
                       ? "bg-cyan-400 text-black font-extrabold animate-bounce"
                       : isSimDone
@@ -299,15 +299,15 @@ export const WorkflowArchitectureBanner: React.FC<WorkflowArchitectureBannerProp
                       : "bg-white/10 text-slate-300"
                   }`}
                 >
-                  Step {s.step}
+                  {s.step}
                 </span>
                 <Icon
-                  className={`w-4 h-4 transition-transform group-hover:scale-110 ${
+                  className={`w-4.5 h-4.5 transition-transform group-hover:scale-110 ${
                     isSimActive ? "text-cyan-300 animate-spin" : isSelected ? "text-cyan-400" : "text-slate-400"
                   }`}
                 />
               </div>
-              <p className={`text-xs font-semibold line-clamp-1 ${isSelected ? "text-white" : "text-slate-300"}`}>
+              <p className={`text-sm font-semibold leading-snug ${isSelected ? "text-white" : "text-slate-300"}`}>
                 {s.label}
               </p>
             </button>
@@ -317,31 +317,31 @@ export const WorkflowArchitectureBanner: React.FC<WorkflowArchitectureBannerProp
 
       {/* Live Simulation Ticker / Log */}
       {isSimulating && (
-        <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/40 text-xs font-mono text-cyan-300 flex items-center gap-2 animate-pulse mb-3">
+        <div className="p-3.5 rounded-xl bg-cyan-950/40 border border-cyan-500/40 text-sm font-mono text-cyan-300 flex items-center gap-2 animate-pulse mb-3">
           <Zap className="w-4 h-4 text-cyan-400 shrink-0 animate-bounce" />
           <span className="truncate">{simLog}</span>
         </div>
       )}
 
       {/* Active Step Deep-Dive Bar */}
-      <div className="mt-2 p-4 rounded-xl bg-[#090d16]/95 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-start gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0 mt-0.5 shadow-md shadow-cyan-500/20">
+      <div className="mt-2 p-5 rounded-xl bg-[#090d16]/95 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="w-11 h-11 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0 mt-0.5 shadow-md shadow-cyan-500/20">
             <selectedStep.icon className="w-5 h-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-950/70 px-2 py-0.5 rounded border border-cyan-800/40">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-950/70 px-2.5 py-1 rounded border border-cyan-800/40">
                 Step {selectedStep.step} of 12 • {selectedStep.category}
               </span>
-              <h3 className="text-sm font-bold text-white">{selectedStep.label}</h3>
+              <h3 className="text-base font-bold text-white">{selectedStep.label}</h3>
             </div>
-            <p className="text-xs text-slate-300 mt-1">{selectedStep.desc}</p>
+            <p className="text-sm text-slate-300 mt-1.5">{selectedStep.desc}</p>
             {selectedStep.subitems && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 mt-2.5 text-xs text-slate-400">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mt-3 text-sm text-slate-400">
                 {selectedStep.subitems.map((sub, idx) => (
                   <span key={idx} className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />
                     <span>{sub}</span>
                   </span>
                 ))}
@@ -354,10 +354,10 @@ export const WorkflowArchitectureBanner: React.FC<WorkflowArchitectureBannerProp
           {selectedStep.interactiveAction && (
             <button
               onClick={handleStepAction}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500 text-black text-xs font-bold shadow-md shadow-cyan-500/20 hover:scale-105 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-500 text-black text-sm font-bold shadow-md shadow-cyan-500/20 hover:scale-105 transition-all"
             >
               <span>{selectedStep.interactiveAction.label}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-4 h-4" />
             </button>
           )}
 
@@ -366,10 +366,10 @@ export const WorkflowArchitectureBanner: React.FC<WorkflowArchitectureBannerProp
               const nextIdx = selectedStep.step % STEPS.length;
               setSelectedStep(STEPS[nextIdx]);
             }}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-slate-300 hover:text-white border border-white/10 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm text-slate-300 hover:text-white border border-white/10 transition-colors"
           >
             <span>Next</span>
-            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>

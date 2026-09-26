@@ -101,6 +101,33 @@ def init_db():
     );
     """)
 
+    # GitHub PR review bot history
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS pr_reviews (
+        id TEXT PRIMARY KEY,
+        repo_id TEXT NOT NULL,
+        pr_number INTEGER NOT NULL,
+        risk_level TEXT NOT NULL,
+        status TEXT NOT NULL,
+        summary_text TEXT NOT NULL,
+        comment_url TEXT,
+        check_run_id TEXT,
+        created_at TEXT NOT NULL
+    );
+    """)
+
+    # Repo review config
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS repo_review_configs (
+        id TEXT PRIMARY KEY,
+        repo_id TEXT NOT NULL,
+        auto_review_enabled BOOLEAN DEFAULT 1,
+        severity_threshold TEXT DEFAULT 'medium',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
+    """)
+
     # Deployments table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS deployments (
@@ -135,6 +162,38 @@ def init_db():
         FOREIGN KEY (deployment_id) REFERENCES deployments(id),
         FOREIGN KEY (repo_id) REFERENCES repositories(id),
         FOREIGN KEY (correlated_pr_id) REFERENCES pull_requests(id)
+    );
+    """)
+
+    # Project Agent Chat History
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS agent_chat_history (
+        id TEXT PRIMARY KEY,
+        project TEXT NOT NULL,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TEXT NOT NULL
+    );
+    """)
+
+    # Project Agent Memory Snapshot
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS agent_project_memory (
+        project TEXT PRIMARY KEY,
+        memory_json TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
+    """)
+
+    # Project Agent Action Log
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS agent_action_log (
+        id TEXT PRIMARY KEY,
+        project TEXT NOT NULL,
+        action_type TEXT NOT NULL,
+        message TEXT NOT NULL,
+        metadata_json TEXT,
+        created_at TEXT NOT NULL
     );
     """)
 

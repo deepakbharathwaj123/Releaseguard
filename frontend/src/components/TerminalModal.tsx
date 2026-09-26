@@ -119,9 +119,9 @@ export const TerminalModal: React.FC<TerminalModalProps> = ({
 
             return (
               <div key={idx} className="flex items-start space-x-2 leading-relaxed">
-                <span className="text-slate-600 select-none text-[11px] shrink-0">[{log.time}]</span>
+                <span className="text-slate-600 select-none text-xs shrink-0">[{log.time}]</span>
                 <span
-                  className={`text-[10px] font-bold px-1.5 py-0.2 rounded shrink-0 select-none ${
+                  className={`text-xs font-bold px-1.5 py-0.2 rounded shrink-0 select-none ${
                     log.level === "SUCCESS" || log.level === "DONE"
                       ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
                       : log.level === "EXEC"
@@ -146,7 +146,7 @@ export const TerminalModal: React.FC<TerminalModalProps> = ({
 
         {/* Terminal Footer */}
         <div className="p-3 bg-[#0a0e1a] border-t border-white/10 flex items-center justify-between text-xs">
-          <span className="text-slate-400 text-[11px]">
+          <span className="text-slate-400 text-xs">
             Target Deployment: <code>deployment/api-server</code> • Namespace: <code>prod</code>
           </span>
           <button

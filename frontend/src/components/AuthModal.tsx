@@ -134,7 +134,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <h3 className="text-base font-extrabold text-white tracking-tight">
                   ReleaseGuard Enterprise Auth
                 </h3>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                   SOC2 Certified
                 </span>
               </div>
@@ -232,11 +232,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                             <span className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors">
                               {user.name}
                             </span>
-                            <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                            <span className="text-xs font-bold px-2 py-0.2 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                               {user.clearanceLevel.replace("_", " ")}
                             </span>
                             {isCurrent && (
-                              <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                              <span className="text-xs font-extrabold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                                 ACTIVE
                               </span>
                             )}
@@ -244,7 +244,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           <p className="text-xs text-slate-300 truncate font-medium">
                             {user.roleTitle}
                           </p>
-                          <p className="text-[11px] text-slate-400 truncate">
+                          <p className="text-xs text-slate-400 truncate">
                             {user.department} • {user.email}
                           </p>
                         </div>
@@ -399,7 +399,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <Fingerprint className="w-3.5 h-3.5 text-cyan-400" />
                     <span>MFA Hardware Token / Authenticator Code</span>
                   </label>
-                  <span className="text-[10px] text-cyan-400 font-mono">6-Digit TOTP</span>
+                  <span className="text-xs text-cyan-400 font-mono">6-Digit TOTP</span>
                 </div>
                 <input
                   type="text"

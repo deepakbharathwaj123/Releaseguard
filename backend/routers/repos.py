@@ -5,6 +5,82 @@ from ..github_service import fetch_github_repo_metadata, normalize_repository_na
 
 router = APIRouter(prefix="/api/repos", tags=["repos"])
 
+
+def get_review_policy(repo_id: str):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM repo_review_configs WHERE repo_id = ?",
+        (repo_id,),
+    )
+    row = cursor.fetchone()
+    conn.close()
+
+    if row is None:
+        return {
+            "repo_id": repo_id,
+            "auto_review_enabled": True,
+            "severity_threshold": "medium",
+        }
+
+    return {
+        "repo_id": row["repo_id"],
+        "auto_review_enabled": bool(row["auto_review_enabled"]),
+        "severity_threshold": row["severity_threshold"] or "medium",
+    }
+
+
+@router.get("/{repo_id}/review-policy")
+def get_review_policy_route(repo_id: str):
+    return get_review_policy(repo_id)
+
+
+@router.post("/{repo_id}/review-policy")
+def set_review_policy(repo_id: str, payload: dict):
+    if repo_id is None:
+        raise HTTPException(status_code=400, detail="Repository id is required")
+
+    auto_review_enabled = bool((payload or {}).get("auto_review_enabled", True))
+    severity_threshold = str((payload or {}).get("severity_threshold", "medium")).strip().lower() or "medium"
+    allowed = {"low", "medium", "high", "critical"}
+    if severity_threshold not in allowed:
+        raise HTTPException(status_code=400, detail="severity_threshold must be one of: low, medium, high, critical")
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id FROM repo_review_configs WHERE repo_id = ?",
+        (repo_id,),
+    )
+    existing = cursor.fetchone()
+
+    if existing is None:
+        cursor.execute(
+            """
+            INSERT INTO repo_review_configs (id, repo_id, auto_review_enabled, severity_threshold, created_at, updated_at)
+            VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+            """,
+            (f"review_cfg_{repo_id}", repo_id, int(auto_review_enabled), severity_threshold),
+        )
+    else:
+        cursor.execute(
+            """
+            UPDATE repo_review_configs
+            SET auto_review_enabled = ?, severity_threshold = ?, updated_at = datetime('now')
+            WHERE repo_id = ?
+            """,
+            (int(auto_review_enabled), severity_threshold, repo_id),
+        )
+
+    conn.commit()
+    conn.close()
+
+    return {
+        "repo_id": repo_id,
+        "auto_review_enabled": auto_review_enabled,
+        "severity_threshold": severity_threshold,
+    }
+
 @router.get("")
 def list_repositories():
     conn = get_db()
@@ -16,6 +92,7 @@ def list_repositories():
                AVG(p.risk_score) as average_risk_score
         FROM repositories r
         LEFT JOIN pull_requests p ON r.id = p.repo_id AND p.status = 'open'
+        WHERE r.webhook_active = 1
         GROUP BY r.id
         ORDER BY r.created_at DESC
     """)
@@ -37,6 +114,49 @@ def list_repositories():
             "average_risk_score": round(row["average_risk_score"] or 0, 1)
         })
     return result
+
+
+@router.delete("/{repo_id}")
+def delete_repository(repo_id: str):
+    if not repo_id:
+        raise HTTPException(status_code=400, detail="Repository id is required")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id FROM repositories WHERE id = ?", (repo_id,))
+    if cursor.fetchone() is None:
+        raise HTTPException(status_code=404, detail="Repository not found")
+
+    cursor.execute("DELETE FROM repo_review_configs WHERE repo_id = ?", (repo_id,))
+
+    try:
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='pull_requests'")
+        if cursor.fetchone():
+            cursor.execute("DELETE FROM pull_requests WHERE repo_id = ?", (repo_id,))
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='findings'")
+        if cursor.fetchone():
+            cursor.execute("DELETE FROM findings WHERE pr_id IN (SELECT id FROM pull_requests WHERE repo_id = ?)", (repo_id,))
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='agent_outputs'")
+        if cursor.fetchone():
+            cursor.execute("DELETE FROM agent_outputs WHERE pr_id IN (SELECT id FROM pull_requests WHERE repo_id = ?)", (repo_id,))
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='pr_comments'")
+        if cursor.fetchone():
+            cursor.execute("DELETE FROM pr_comments WHERE pr_id IN (SELECT id FROM pull_requests WHERE repo_id = ?)", (repo_id,))
+    except Exception:
+        pass
+
+    cursor.execute("DELETE FROM repositories WHERE id = ?", (repo_id,))
+
+    conn.commit()
+
+    return {
+        "status": "deleted",
+        "repo_id": repo_id,
+    }
 
 @router.get("/{repo_id}")
 def get_repository(repo_id: str):
