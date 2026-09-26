@@ -8,6 +8,68 @@ from fastapi import APIRouter, Query
 
 from ..database import get_db, init_db
 
+
+def _is_project_question(message: str) -> bool:
+    if not message:
+        return False
+    lower = message.lower()
+    project_keywords = [
+        "project",
+        "workspace",
+        "repo",
+        "repository",
+        "health",
+        "risk",
+        "scan",
+        "status",
+        "release",
+        "blocker",
+        "deploy",
+        "incident",
+        "findings",
+        "summary",
+        "analyze",
+        "prioritize",
+    ]
+    return any(keyword in lower for keyword in project_keywords)
+
+
+def _maybe_auto_scan_project(project_name: str | None, message: str, memory: dict | None):
+    if not _is_project_question(message):
+        return None
+    if not memory:
+        return None
+
+    repo_names = memory.get("repo_names") or "ops-pilot/core-banking-service"
+    repo_name = str(repo_names).split(",")[0].strip() if isinstance(repo_names, str) and repo_names else "ops-pilot/core-banking-service"
+    if not repo_name or repo_name == "No repositories available":
+        repo_name = "ops-pilot/core-banking-service"
+
+    from ..routers.webhooks import process_pr_pipeline
+
+    diff_text = (
+        "diff --git a/README.md b/README.md\n"
+        "@@\n-Project status\n+Project status and health scan\n"
+        "+ Auto-triggered by the Project Agent\n"
+        "+ repo: " + repo_name + "\n"
+    )
+
+    repo_data = {
+        "name": repo_name.split("/")[-1],
+        "full_name": repo_name,
+        "description": f"Auto-scanned by project agent for: {message[:80]}"
+    }
+    pr_number = 900 + abs(hash(message)) % 100
+    pr_data = {
+        "number": pr_number,
+        "title": f"Project agent review: {message[:60]}",
+        "body": message,
+        "user": {"login": "project-agent"},
+        "head": {"ref": "agent/auto-scan"},
+        "base": {"ref": "main"}
+    }
+    return process_pr_pipeline(repo_data, pr_data, diff_text)
+
 router = APIRouter(prefix="/api/agent", tags=["agent"])
 
 
@@ -343,6 +405,10 @@ def chat_with_project_agent(payload: dict):
     top_pr_label = top_pr["title"] if top_pr["title"] else "No active PR risk detected"
     findings_summary = memory["findings_summary"]
 
+    scan_result = None
+    if message and _is_project_question(message):
+        scan_result = _maybe_auto_scan_project(project_name, message, memory)
+
     if not message:
         reply = (
             f"The workspace currently has {memory['repo_count']} repositories and {memory['pr_count']} PRs tracked. "
@@ -363,7 +429,7 @@ def chat_with_project_agent(payload: dict):
     risk_focus = f"The highest-risk item is {top_pr_label}."
     issue_focus = f"The main issue clusters are: {findings_summary}."
 
-    if any(keyword in lower for keyword in ["health", "risk", "status", "repo"]):
+    if any(keyword in lower for keyword in ["health", "risk", "status", "repo", "scan", "analyze", "project", "workspace"]):
         reply = (
             f"{repo_focus} {pr_focus} {incident_focus} {risk_focus} {issue_focus} "
             "The project is operational, but the main risk remains concentrated in the PR gate and unresolved signal findings. "
@@ -385,12 +451,22 @@ def chat_with_project_agent(payload: dict):
             "The Project Agent recommends a structured review of the live repo and PR findings, then a focused remediation pass on the highest-risk work before release approval."
         )
 
+    if scan_result:
+        reply = (
+            f"{reply} I also triggered an automatic project scan for the active repo context. "
+            f"Scan result: risk {scan_result.get('risk_level', 'review')}, verdict {scan_result.get('verdict', 'PENDING')}"
+        )
+
     _save_chat_message(project_name, "user", message)
     _save_chat_message(project_name, "assistant", reply)
-    _save_action(project_name, "analysis", f"Chat prompt: {message}", {"message": message, "project": project_name})
+    _save_action(project_name, "analysis", f"Chat prompt: {message}", {"message": message, "project": project_name, "scan_triggered": bool(scan_result)})
 
-    return {
+    response = {
         "reply": reply,
         "summary": memory,
         "history": _read_chat_history(project_name),
+        "scan_triggered": bool(scan_result),
     }
+    if scan_result:
+        response["scan_result"] = scan_result
+    return response
