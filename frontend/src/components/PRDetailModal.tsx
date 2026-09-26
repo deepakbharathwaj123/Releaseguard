@@ -235,7 +235,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                 {pr.verdict !== "GO" && (
                   <button
                     onClick={() => setShowOverrideDialog(true)}
-                    className="flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-slate-300 hover:text-white transition-colors"
+                    className="flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
                   >
                     <UserCheck className="w-3 h-3 text-cyan-400" />
                     <span>Tech Lead Override</span>
@@ -296,7 +296,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                     <button
                       key={cat}
                       onClick={() => setSelectedScannerFilter(cat)}
-                      className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all ${
+                      className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
                         selectedScannerFilter === cat
                           ? "bg-cyan-500 text-black font-bold"
                           : "bg-[#141b2b] text-slate-400 hover:text-white border border-[rgba(255,255,255,0.06)]"
@@ -323,7 +323,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                         <div>
                           <div className="flex items-center space-x-2">
                             <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
+                              className={`text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
                                 f.severity === "CRITICAL"
                                   ? "bg-red-500/20 text-red-400 border border-red-500/40"
                                   : f.severity === "HIGH"
@@ -335,7 +335,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                             >
                               {f.severity}
                             </span>
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400 uppercase">
+                            <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400 uppercase">
                               {f.scanner_type} Scanner
                             </span>
                           </div>
@@ -377,7 +377,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                     <Bot className="w-5 h-5 text-blue-400" />
                     <div>
                       <span className="text-xs font-bold text-white block">IBM Bob Swarm Consensus Engine</span>
-                      <span className="text-[11px] text-slate-400">Granite 3-8B Instruct / watsonx multi-agent orchestration</span>
+                      <span className="text-xs text-slate-400">Granite 3-8B Instruct / watsonx multi-agent orchestration</span>
                     </div>
                   </div>
                   <span className="text-xs font-bold px-2 py-1 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
@@ -405,11 +405,11 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                               }`}
                             />
                           </div>
-                          <p className="text-[11px] text-cyan-400 font-medium">{agent.agent_role}</p>
+                          <p className="text-xs text-cyan-400 font-medium">{agent.agent_role}</p>
                         </div>
 
                         <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                          className={`text-xs font-bold px-2 py-0.5 rounded uppercase ${
                             agent.status === "SUCCESS"
                               ? "bg-emerald-500/20 text-emerald-300"
                               : agent.status === "WARNING"
@@ -427,7 +427,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
 
                       {agent.details_json?.checklist && (
                         <div className="space-y-1.5 pt-1">
-                          <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                          <span className="text-xs text-slate-400 uppercase font-bold tracking-wider">
                             Verification Checklist
                           </span>
                           {agent.details_json.checklist.map((item: any, idx: number) => (
@@ -447,10 +447,10 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
 
                       {agent.details_json?.compliance_matrix && (
                         <div className="space-y-1 pt-1">
-                          <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                          <span className="text-xs text-slate-400 uppercase font-bold tracking-wider">
                             Compliance Flags
                           </span>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px]">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs">
                             {Object.entries(agent.details_json.compliance_matrix).map(([k, v]) => (
                               <span key={k} className="p-1 rounded bg-[#090d16] text-slate-400">
                                 <b className="text-slate-200">{k.toUpperCase()}:</b> {String(v)}
@@ -517,7 +517,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                           : "bg-[#101726] border border-white/10 text-slate-200 mr-8"
                       }`}
                     >
-                      <div className="flex items-center justify-between font-bold text-[11px] text-cyan-400">
+                      <div className="flex items-center justify-between font-bold text-xs text-cyan-400">
                         <span>{msg.sender}</span>
                         <span className="text-slate-500 font-normal">{msg.time}</span>
                       </div>
@@ -606,7 +606,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                           </span>
                           <h5 className="text-xs font-bold text-white">{step.title}</h5>
                         </div>
-                        <span className="text-[11px] text-slate-400">{step.description}</span>
+                        <span className="text-xs text-slate-400">{step.description}</span>
                       </div>
 
                       <div className="relative group">
@@ -644,7 +644,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                   </div>
 
                   <div className="px-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-right">
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">FinOps Status</span>
+                    <span className="text-xs text-slate-400 uppercase font-semibold block">FinOps Status</span>
                     <span className="text-sm font-bold text-white">{costAgent?.verdict || "APPROVED"}</span>
                   </div>
                 </div>
@@ -655,7 +655,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {Object.entries(costAgent.details_json.cost_breakdown).map(([k, v]) => (
                         <div key={k} className="p-3 rounded-lg bg-[#090d16] border border-white/5">
-                          <span className="text-[11px] text-slate-400 block">{k}</span>
+                          <span className="text-xs text-slate-400 block">{k}</span>
                           <span className="text-base font-bold text-cyan-300 mt-0.5 block">{String(v)}</span>
                         </div>
                       ))}
@@ -673,18 +673,18 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                     <MessageSquare className="w-4 h-4 text-cyan-400" />
                     <span className="text-xs font-bold text-white">Live GitHub Pull Request Bot Comment</span>
                   </div>
-                  <span className="text-[10px] text-emerald-400 font-mono bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-800/40">
+                  <span className="text-xs text-emerald-400 font-mono bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-800/40">
                     Status Check: {pr.pr_comment?.status_check_state?.toUpperCase() || "SUCCESS"}
                   </span>
                 </div>
 
                 <div className="p-5 rounded-xl bg-[#0d1117] border border-[#30363d] text-slate-200 font-sans space-y-4">
                   <div className="flex items-center space-x-2 pb-3 border-b border-[#30363d]">
-                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white">
+                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white">
                       RG
                     </div>
                     <span className="text-xs font-bold text-white">releaseguard-bot</span>
-                    <span className="text-[11px] text-slate-400">commented just now</span>
+                    <span className="text-xs text-slate-400">commented just now</span>
                   </div>
 
                   <div className="prose prose-invert max-w-none text-xs leading-relaxed space-y-3">
@@ -737,7 +737,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                         <div className={`${bgClass} px-2 py-0.5 rounded leading-relaxed flex items-center justify-between`}>
                           <span className={colorClass}>{line || " "}</span>
                           {matchedFinding && (
-                            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-red-500/20 text-red-400 border border-red-500/40 uppercase ml-2 shrink-0">
+                            <span className="text-xs font-bold px-1.5 py-0.2 rounded bg-red-500/20 text-red-400 border border-red-500/40 uppercase ml-2 shrink-0">
                               {matchedFinding.scanner_type}: {matchedFinding.severity}
                             </span>
                           )}
@@ -748,8 +748,8 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                               <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
                               <span>{matchedFinding.title}</span>
                             </div>
-                            <p className="text-[11px] text-slate-300">{matchedFinding.description}</p>
-                            <p className="text-[11px] text-emerald-300 font-medium">💡 Fix: {matchedFinding.remediation}</p>
+                            <p className="text-xs text-slate-300">{matchedFinding.description}</p>
+                            <p className="text-xs text-emerald-300 font-medium">💡 Fix: {matchedFinding.remediation}</p>
                           </div>
                         )}
                       </React.Fragment>

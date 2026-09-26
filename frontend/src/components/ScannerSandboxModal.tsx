@@ -246,7 +246,7 @@ export const ScannerSandboxModal: React.FC<ScannerSandboxModalProps> = ({
           {/* PR Metadata Form */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="text-[11px] font-semibold text-slate-400 block mb-1">Target Repository</label>
+              <label className="text-sm font-semibold text-slate-400 block mb-1.5">Target Repository</label>
               <input
                 type="text"
                 value={repoName}
@@ -256,7 +256,7 @@ export const ScannerSandboxModal: React.FC<ScannerSandboxModalProps> = ({
             </div>
 
             <div>
-              <label className="text-[11px] font-semibold text-slate-400 block mb-1">PR Author</label>
+              <label className="text-sm font-semibold text-slate-400 block mb-1.5">PR Author</label>
               <input
                 type="text"
                 value={author}
@@ -266,7 +266,7 @@ export const ScannerSandboxModal: React.FC<ScannerSandboxModalProps> = ({
             </div>
 
             <div>
-              <label className="text-[11px] font-semibold text-slate-400 block mb-1">Branch Name</label>
+              <label className="text-sm font-semibold text-slate-400 block mb-1.5">Branch Name</label>
               <input
                 type="text"
                 value={sourceBranch}
@@ -277,7 +277,7 @@ export const ScannerSandboxModal: React.FC<ScannerSandboxModalProps> = ({
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-slate-400 block mb-1">PR Title</label>
+            <label className="text-sm font-semibold text-slate-400 block mb-1.5">PR Title</label>
             <input
               type="text"
               value={title}
@@ -289,8 +289,8 @@ export const ScannerSandboxModal: React.FC<ScannerSandboxModalProps> = ({
           {/* Unified Diff Editor */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-[11px] font-semibold text-slate-400">Git Patch / Diff</label>
-              <span className="text-[10px] text-slate-500 font-mono">Unified diff format</span>
+              <label className="text-xs font-semibold text-slate-400">Git Patch / Diff</label>
+              <span className="text-xs text-slate-500 font-mono">Unified diff format</span>
             </div>
             <textarea
               rows={9}

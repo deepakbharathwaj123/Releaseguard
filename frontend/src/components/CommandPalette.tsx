@@ -77,7 +77,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             onChange={(e) => setQuery(e.target.value)}
             className="w-full bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none"
           />
-          <kbd className="px-2 py-0.5 rounded bg-white/10 text-[10px] text-slate-300 font-mono">ESC</kbd>
+          <kbd className="px-2 py-0.5 rounded bg-white/10 text-xs text-slate-300 font-mono">ESC</kbd>
         </div>
 
         {/* Results List */}
@@ -85,7 +85,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           
           {/* Quick Actions */}
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 block">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 block">
               Quick Actions
             </span>
             <button
@@ -101,7 +101,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 </div>
                 <div>
                   <span className="font-semibold block">Open PR & Webhook Sandbox</span>
-                  <span className="text-[11px] text-slate-400">Test presets or custom git diffs</span>
+                  <span className="text-xs text-slate-400">Test presets or custom git diffs</span>
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors" />
@@ -121,7 +121,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 </div>
                 <div>
                   <span className="font-semibold block">Simulate 504 Gateway Production Outage</span>
-                  <span className="text-[11px] text-slate-400">Triggers Bob Incident Analysis Agent</span>
+                  <span className="text-xs text-slate-400">Triggers Bob Incident Analysis Agent</span>
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-red-400 transition-colors" />
@@ -131,7 +131,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           {/* Pull Requests */}
           {filteredPrs.length > 0 && (
             <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 block">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 block">
                 Pull Requests ({filteredPrs.length})
               </span>
               {filteredPrs.slice(0, 5).map((pr) => (
@@ -152,13 +152,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                         <span className="font-mono text-cyan-400 font-bold">#{pr.pr_number}</span>
                         <span className="font-semibold truncate">{pr.title}</span>
                       </div>
-                      <span className="text-[11px] text-slate-400 block truncate">
+                      <span className="text-xs text-slate-400 block truncate">
                         Score: {pr.risk_score} • Verdict: {pr.verdict} • @{pr.author}
                       </span>
                     </div>
                   </div>
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase shrink-0 ${
+                    className={`text-xs font-bold px-2 py-0.5 rounded uppercase shrink-0 ${
                       pr.risk_level === "CRITICAL"
                         ? "bg-red-500/20 text-red-400"
                         : pr.risk_level === "HIGH"
@@ -175,7 +175,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
           {/* Navigation Views */}
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 block">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 block">
               Views
             </span>
             <div className="grid grid-cols-2 gap-2">
@@ -187,7 +187,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 className="p-2.5 rounded-xl bg-[#121826] hover:bg-[#182033] text-left text-xs text-slate-300 hover:text-white"
               >
                 <span className="font-semibold block">Workflow Engine</span>
-                <span className="text-[10px] text-slate-400">12-Stage Visual Map</span>
+                <span className="text-xs text-slate-400">12-Stage Visual Map</span>
               </button>
               <button
                 onClick={() => {
@@ -197,7 +197,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 className="p-2.5 rounded-xl bg-[#121826] hover:bg-[#182033] text-left text-xs text-slate-300 hover:text-white"
               >
                 <span className="font-semibold block">Incident Hub</span>
-                <span className="text-[10px] text-slate-400">Runtime Telemetry & SRE</span>
+                <span className="text-xs text-slate-400">Runtime Telemetry & SRE</span>
               </button>
             </div>
           </div>
@@ -205,13 +205,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-white/10 bg-[#090d16] flex items-center justify-between text-[11px] text-slate-400">
+        <div className="p-3 border-t border-white/10 bg-[#090d16] flex items-center justify-between text-xs text-slate-400">
           <span>ReleaseGuard Command Center</span>
           <div className="flex items-center space-x-2">
             <span>Navigate with</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-mono">↑</kbd>
-            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-mono">↓</kbd>
-            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-mono">↵</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-xs font-mono">↑</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-xs font-mono">↓</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-xs font-mono">↵</kbd>
           </div>
         </div>
 

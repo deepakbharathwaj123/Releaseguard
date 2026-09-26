@@ -338,7 +338,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] text-cyan-300">
+          <div className="flex items-center gap-2 text-xs text-cyan-300">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1">
               <Sparkles className="w-3.5 h-3.5" />
               Active workspace analysis
@@ -349,27 +349,27 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="glass-card p-4 rounded-2xl border border-white/10 bg-[#0c1220]/80">
-          <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">Repos</div>
+          <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Repos</div>
           <div className="mt-3 text-2xl font-black text-white">{metrics.repoCount}</div>
-          <div className="mt-1 text-[11px] text-slate-400">Tracked repositories</div>
+          <div className="mt-1 text-xs text-slate-400">Tracked repositories</div>
         </div>
 
         <div className="glass-card p-4 rounded-2xl border border-white/10 bg-[#0c1220]/80">
-          <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">PRs</div>
+          <div className="text-xs uppercase tracking-[0.18em] text-slate-400">PRs</div>
           <div className="mt-3 text-2xl font-black text-white">{metrics.prCount}</div>
-          <div className="mt-1 text-[11px] text-slate-400">Open review queue</div>
+          <div className="mt-1 text-xs text-slate-400">Open review queue</div>
         </div>
 
         <div className="glass-card p-4 rounded-2xl border border-white/10 bg-[#0c1220]/80">
-          <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">Blockers</div>
+          <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Blockers</div>
           <div className="mt-3 text-2xl font-black text-amber-300">{metrics.blockerCount}</div>
-          <div className="mt-1 text-[11px] text-slate-400">Critical or NO-GO items</div>
+          <div className="mt-1 text-xs text-slate-400">Critical or NO-GO items</div>
         </div>
 
         <div className="glass-card p-4 rounded-2xl border border-white/10 bg-[#0c1220]/80">
-          <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">Incidents</div>
+          <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Incidents</div>
           <div className="mt-3 text-2xl font-black text-rose-300">{metrics.incidentCount}</div>
-          <div className="mt-1 text-[11px] text-slate-400">Signals in observation</div>
+          <div className="mt-1 text-xs text-slate-400">Signals in observation</div>
         </div>
       </div>
 
@@ -380,7 +380,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
               <BrainCircuit className="w-4 h-4 text-cyan-400" />
               <h4 className="text-sm font-bold text-white">Workspace insight chat</h4>
             </div>
-            <span className="text-[10px] text-slate-400">Agent mode: analysis + guidance</span>
+            <span className="text-xs text-slate-400">Agent mode: analysis + guidance</span>
           </div>
 
           <div className="mt-4 space-y-3">
@@ -402,7 +402,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
           </div>
 
           <div className="mt-5">
-            <label className="text-[10px] uppercase tracking-[0.18em] text-slate-400 block mb-2">
+            <label className="text-xs uppercase tracking-[0.18em] text-slate-400 block mb-2">
               Custom prompt
             </label>
             <textarea
@@ -445,9 +445,9 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
               </button>
             </div>
             <div className="mt-3 flex flex-wrap gap-2 justify-end">
-              <button onClick={handleRunScan} className="px-3 py-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-200 text-[11px] font-semibold">Run live scan</button>
-              <button onClick={handleSimulateIncident} className="px-3 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-200 text-[11px] font-semibold">Simulate incident</button>
-              <button onClick={handleRollback} className="px-3 py-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-200 text-[11px] font-semibold">Run rollback</button>
+              <button onClick={handleRunScan} className="px-3 py-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-200 text-xs font-semibold">Run live scan</button>
+              <button onClick={handleSimulateIncident} className="px-3 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-200 text-xs font-semibold">Simulate incident</button>
+              <button onClick={handleRollback} className="px-3 py-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-200 text-xs font-semibold">Run rollback</button>
             </div>
           </div>
         </div>
@@ -465,21 +465,21 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
 
             {memoryMode && (
               <div className="mt-4 space-y-3 rounded-xl border border-cyan-500/20 bg-[#071722] p-3">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-cyan-300">Agent memory</div>
+                <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">Agent memory</div>
                 <div className="text-xs text-slate-200 font-semibold">Project: {memoryData?.project || projectKey || "workspace"}</div>
 
                 {memoryData && (
                   <div className="space-y-2">
-                    <div className="text-[11px] text-slate-300">
+                    <div className="text-xs text-slate-300">
                       <span className="font-semibold text-white">Top PR:</span> {memoryData.top_pr?.title || "N/A"}
                     </div>
-                    <div className="text-[11px] text-slate-300">
+                    <div className="text-xs text-slate-300">
                       <span className="font-semibold text-white">Findings:</span> {memoryData.top_pr_findings?.length ? memoryData.top_pr_findings.map((f: any) => `${f.severity}: ${f.title}`).join(" • ") : memoryData.findings_summary || "No findings available"}
                     </div>
-                    <div className="text-[11px] text-slate-300">
+                    <div className="text-xs text-slate-300">
                       <span className="font-semibold text-white">Incidents:</span> {memoryData.incident_links?.length ? memoryData.incident_links.map((i: any) => `${i.incident_title} → ${i.pr_title || "Unlinked PR"}`).join(" • ") : "No active incidents linked"}
                     </div>
-                    <div className="text-[11px] text-slate-300">
+                    <div className="text-xs text-slate-300">
                       <span className="font-semibold text-white">Focus:</span> {memoryData.focus_areas?.join(" • ") || "Release and security review"}
                     </div>
                   </div>
@@ -488,30 +488,30 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
                 {(timeline.length > 0 || chatHistory.length > 0) && (
                   <div className="pt-2 border-t border-white/10 space-y-4">
                     <div>
-                      <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-2">Action timeline</div>
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400 mb-2">Action timeline</div>
                       <div className="space-y-2">
                         {timeline.map((event) => (
                           <div key={event.id} className="rounded-lg border border-white/10 bg-[#0b1320] px-2.5 py-2">
-                            <div className="flex items-center justify-between gap-2 text-[10px] text-slate-400">
+                            <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
                               <span className="uppercase tracking-[0.12em]">{event.type}</span>
                               <span>{event.timestamp}</span>
                             </div>
-                            <div className="mt-1 text-[11px] text-slate-200">{event.message}</div>
+                            <div className="mt-1 text-xs text-slate-200">{event.message}</div>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-2">Chat history</div>
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400 mb-2">Chat history</div>
                       <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
                         {chatHistory.map((entry) => (
                           <div key={entry.id} className="rounded-lg border border-white/10 bg-[#0b1320] px-2.5 py-2">
-                            <div className="flex items-center justify-between gap-2 text-[10px] text-slate-400">
+                            <div className="flex items-center justify-between gap-2 text-xs text-slate-400">
                               <span className="uppercase tracking-[0.12em]">{entry.role}</span>
                               <span>{entry.timestamp}</span>
                             </div>
-                            <div className="mt-1 text-[11px] text-slate-200 whitespace-pre-wrap">{entry.content}</div>
+                            <div className="mt-1 text-xs text-slate-200 whitespace-pre-wrap">{entry.content}</div>
                           </div>
                         ))}
                       </div>
@@ -546,7 +546,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
         </div>
       </div>
 
-      <div className="glass-card p-4 rounded-2xl border border-white/10 bg-[#0d121d]/90 text-[11px] text-slate-400">
+      <div className="glass-card p-4 rounded-2xl border border-white/10 bg-[#0d121d]/90 text-xs text-slate-400">
         Signed in as <span className="text-cyan-300 font-semibold">{currentUser?.name || "Guest workspace operator"}</span> • Project Agent is in analysis mode and can guide release decisions with the repo and PR telemetry available in this session.
       </div>
     </div>

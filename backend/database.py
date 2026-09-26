@@ -101,6 +101,33 @@ def init_db():
     );
     """)
 
+    # GitHub PR review bot history
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS pr_reviews (
+        id TEXT PRIMARY KEY,
+        repo_id TEXT NOT NULL,
+        pr_number INTEGER NOT NULL,
+        risk_level TEXT NOT NULL,
+        status TEXT NOT NULL,
+        summary_text TEXT NOT NULL,
+        comment_url TEXT,
+        check_run_id TEXT,
+        created_at TEXT NOT NULL
+    );
+    """)
+
+    # Repo review config
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS repo_review_configs (
+        id TEXT PRIMARY KEY,
+        repo_id TEXT NOT NULL,
+        auto_review_enabled BOOLEAN DEFAULT 1,
+        severity_threshold TEXT DEFAULT 'medium',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
+    """)
+
     # Deployments table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS deployments (
