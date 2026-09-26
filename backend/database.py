@@ -138,5 +138,37 @@ def init_db():
     );
     """)
 
+    # Project Agent Chat History
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS agent_chat_history (
+        id TEXT PRIMARY KEY,
+        project TEXT NOT NULL,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TEXT NOT NULL
+    );
+    """)
+
+    # Project Agent Memory Snapshot
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS agent_project_memory (
+        project TEXT PRIMARY KEY,
+        memory_json TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
+    """)
+
+    # Project Agent Action Log
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS agent_action_log (
+        id TEXT PRIMARY KEY,
+        project TEXT NOT NULL,
+        action_type TEXT NOT NULL,
+        message TEXT NOT NULL,
+        metadata_json TEXT,
+        created_at TEXT NOT NULL
+    );
+    """)
+
     conn.commit()
     conn.close()

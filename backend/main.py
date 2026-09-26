@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import get_db, init_db
 from .seed_data import seed_database
-from .routers import webhooks, repos, prs, deployments, demo, github
+from .routers import webhooks, repos, prs, deployments, demo, github, agent
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -39,6 +39,7 @@ app.include_router(prs.router)
 app.include_router(deployments.router)
 app.include_router(demo.router)
 app.include_router(github.router)
+app.include_router(agent.router)
 
 @app.get("/")
 def root():

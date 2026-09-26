@@ -16,7 +16,8 @@ import {
   ChevronDown,
   LogOut,
   KeyRound,
-  ShieldCheck
+  ShieldCheck,
+  Bot
 } from "lucide-react";
 import { UserProfile, DEMO_USERS } from "@/types/auth";
 
@@ -138,6 +139,18 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Activity className="w-3.5 h-3.5 text-amber-400" />
               <span>Runtime Incidents</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("agent")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                activeTab === "agent"
+                  ? "bg-[#0f62fe] text-white shadow-md shadow-blue-600/30 font-bold"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <Bot className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Project Agent</span>
             </button>
 
             <button
@@ -306,6 +319,7 @@ export const Header: React.FC<HeaderProps> = ({
             { id: "repos", label: "Repositories" },
             { id: "workflow", label: "Workflow Engine" },
             { id: "incidents", label: "Runtime Incidents" },
+            { id: "agent", label: "Project Agent" },
             { id: "auth", label: "Access & Auth" },
           ].map((tab) => (
             <button

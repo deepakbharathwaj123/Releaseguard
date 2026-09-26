@@ -10,6 +10,7 @@ import { RepoList, RepoItem } from "@/components/RepoList";
 import { PRDetailModal } from "@/components/PRDetailModal";
 import { ScannerSandboxModal } from "@/components/ScannerSandboxModal";
 import { IncidentHub } from "@/components/IncidentHub";
+import { ProjectAgentPanel } from "@/components/ProjectAgentPanel";
 import { CommandPalette } from "@/components/CommandPalette";
 import { UserProfile } from "@/types/auth";
 
@@ -26,12 +27,14 @@ export default function Home() {
   const [showSandbox, setShowSandbox] = useState<boolean>(false);
   const [showCommandPalette, setShowCommandPalette] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
 
   const fetchAllData = async () => {
     try {
       setLoading(true);
+      setApiError(null);
       const [reposRes, prsRes, depsRes, incsRes] = await Promise.all([
         fetch(`${API_BASE}/api/repos`),
         fetch(`${API_BASE}/api/prs`),
@@ -45,6 +48,7 @@ export default function Home() {
       if (incsRes.ok) setIncidents(await incsRes.json());
     } catch (err) {
       console.error("Error fetching data from ReleaseGuard API:", err);
+      setApiError("ReleaseGuard backend is offline or unreachable. Start the API server on http://localhost:8001 to restore dashboard data.");
     } finally {
       setLoading(false);
     }
@@ -164,7 +168,12 @@ export default function Home() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        
+        {apiError && (
+          <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+            {apiError}
+          </div>
+        )}
+
         {/* End-to-End Workflow Pipeline Visualizer Banner */}
         <WorkflowArchitectureBanner />
 
@@ -244,7 +253,17 @@ export default function Home() {
           />
         )}
 
-        {/* Tab 5: Access & Auth Governance */}
+        {/* Tab 5: Project Agent */}
+        {activeTab === "agent" && (
+          <ProjectAgentPanel
+            repos={repos}
+            prs={prs}
+            incidents={incidents}
+            currentUser={currentUser}
+          />
+        )}
+
+        {/* Tab 6: Access & Auth Governance */}
         {activeTab === "auth" && (
           <TeamAuthTab
             currentUser={currentUser}
