@@ -2,7 +2,7 @@ import sqlite3
 
 import pytest
 
-from backend.github_review_service import evaluate_review_policy
+from backend.github_review_service import evaluate_review_policy, get_policy_presets, send_policy_alert
 from backend.routers.repos import get_review_policy, set_review_policy
 
 
@@ -146,3 +146,74 @@ def test_evaluate_review_policy_enforces_severity_threshold(monkeypatch, tmp_pat
     assert medium_result['decision'] == 'pass'
     assert critical_result['allowed'] is False
     assert critical_result['decision'] == 'fail'
+
+
+def test_evaluate_review_policy_allows_manual_override_when_auto_review_disabled(monkeypatch, tmp_path):
+    db_path = tmp_path / 'review_policy_disabled.db'
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        """
+        CREATE TABLE repo_review_configs (
+            id TEXT PRIMARY KEY,
+            repo_id TEXT NOT NULL,
+            auto_review_enabled BOOLEAN DEFAULT 1,
+            severity_threshold TEXT DEFAULT 'medium',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )
+        """
+    )
+    conn.execute(
+        "INSERT INTO repo_review_configs (id, repo_id, auto_review_enabled, severity_threshold, created_at, updated_at) VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))",
+        ('cfg_2', 'repo_disabled_123', 0, 'critical'),
+    )
+    conn.commit()
+    conn.close()
+
+    def fake_get_db():
+        db = sqlite3.connect(db_path)
+        db.row_factory = sqlite3.Row
+        return db
+
+    monkeypatch.setattr('backend.github_review_service.get_db', fake_get_db)
+
+    result = evaluate_review_policy('repo_disabled_123', 'critical')
+
+    assert result['auto_review_enabled'] is False
+    assert result['allowed'] is True
+    assert result['decision'] == 'pass'
+
+
+def test_get_policy_presets_returns_default_team_profiles():
+    presets = get_policy_presets()
+
+    assert 'strict' in presets
+    assert 'balanced' in presets
+    assert 'permissive' in presets
+    assert presets['strict']['severity_threshold'] == 'high'
+
+
+def test_send_policy_alert_uses_slack_payload(monkeypatch):
+    sent = {}
+
+    class FakeResponse:
+        def __init__(self):
+            self.status_code = 200
+        def raise_for_status(self):
+            return None
+
+    def fake_post(url, json=None, timeout=None):
+        sent['url'] = url
+        sent['json'] = json
+        sent['timeout'] = timeout
+        return FakeResponse()
+
+    monkeypatch.setattr('backend.github_review_service.requests.post', fake_post)
+    monkeypatch.setenv('SLACK_WEBHOOK_URL', 'https://hooks.slack.com/services/test')
+
+    result = send_policy_alert('acme/app', 12, 'HIGH', 'Build failed', {'repo_id': 'repo_acme_app', 'threshold': 'high', 'decision': 'fail'})
+
+    assert result['status'] == 'sent'
+    assert sent['url'] == 'https://hooks.slack.com/services/test'
+    assert 'PR #12' in sent['json']['text']
+    assert 'HIGH' in sent['json']['text']
