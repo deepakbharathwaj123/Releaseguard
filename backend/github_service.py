@@ -45,6 +45,34 @@ def build_github_headers(token: str) -> Dict[str, str]:
     }
 
 
+def build_git_login_instructions(username: str, repo_name: Optional[str] = None, remote_url: Optional[str] = None) -> Dict[str, Any]:
+    safe_username = (username or "your-github-username").strip() or "your-github-username"
+    repo_slug = "owner/repo"
+
+    if repo_name and str(repo_name).strip():
+        repo_slug = normalize_repository_name(str(repo_name).strip())
+
+    remote = str(remote_url or f"https://github.com/{repo_slug}.git").strip() or f"https://github.com/{repo_slug}.git"
+
+    commands = [
+        f'git config --global user.name "{safe_username}"',
+        'git config --global user.email "you@example.com"',
+        f'git remote set-url origin {remote}',
+        'git config --global credential.helper manager-core',
+        'git remote -v',
+        'git fetch origin',
+    ]
+
+    return {
+        "provider": "github",
+        "username": safe_username,
+        "repo": repo_slug,
+        "remote_url": remote,
+        "commands": commands,
+        "note": "Use a fine-grained PAT with repo access enabled when authenticating to GitHub.",
+    }
+
+
 def get_github_json(token: str, path: str, params: Optional[Dict[str, Any]] = None) -> Any:
     response = requests.get(
         f"https://api.github.com{path}",

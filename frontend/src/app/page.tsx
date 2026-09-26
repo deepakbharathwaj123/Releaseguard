@@ -51,6 +51,14 @@ export default function Home() {
   };
 
   useEffect(() => {
+    const savedUser = localStorage.getItem("releaseguard-user");
+    if (savedUser) {
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error("Failed to restore saved user:", error);
+      }
+    }
     fetchAllData();
   }, []);
 
@@ -69,6 +77,7 @@ export default function Home() {
 
   const handleLogin = (user: UserProfile) => {
     setCurrentUser(user);
+    localStorage.setItem("releaseguard-user", JSON.stringify(user));
     setIsAuthModalOpen(false);
     setActiveTab("prs");
   };
@@ -79,6 +88,7 @@ export default function Home() {
 
   const handleLogout = () => {
     setCurrentUser(null);
+    localStorage.removeItem("releaseguard-user");
     setIsAuthModalOpen(true);
     setActiveTab("auth");
   };

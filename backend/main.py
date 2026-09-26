@@ -38,6 +38,7 @@ app.include_router(repos.router)
 app.include_router(prs.router)
 app.include_router(deployments.router)
 app.include_router(demo.router)
+app.include_router(github.router)
 
 @app.get("/")
 def root():

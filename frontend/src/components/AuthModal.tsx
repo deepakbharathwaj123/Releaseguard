@@ -37,6 +37,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [emailInput, setEmailInput] = useState("sarah.chen@releaseguard.enterprise");
   const [passwordInput, setPasswordInput] = useState("••••••••••••");
   const [mfaCode, setMfaCode] = useState("492810");
+  const [githubUsername, setGithubUsername] = useState("deepakbharathwaj123");
+  const [githubEmail, setGithubEmail] = useState("deepakbala2007@gmail.com");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authSuccessMsg, setAuthSuccessMsg] = useState<string | null>(null);
 
@@ -85,6 +87,37 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         onClose();
       }, 700);
     }, 650);
+  };
+
+  const handleGithubSignIn = () => {
+    const username = githubUsername.trim() || "deepakbharathwaj123";
+    const email = githubEmail.trim() || `${username}@github.com`;
+    const githubUser: UserProfile = {
+      ...DEMO_USERS[0],
+      id: "github-user-1",
+      name: username,
+      email,
+      roleTitle: "GitHub Repository Owner",
+      department: "Engineering & Source Control",
+      organization: "GitHub",
+      permissions: {
+        ...DEMO_USERS[0].permissions,
+        canConfigureWebhooks: true,
+        canTriggerSimulations: true,
+      },
+      lastLogin: "Active Now",
+    };
+
+    setIsAuthenticating(true);
+    setTimeout(() => {
+      onLogin(githubUser);
+      setIsAuthenticating(false);
+      setAuthSuccessMsg(`GitHub login verified for ${username}`);
+      setTimeout(() => {
+        setAuthSuccessMsg(null);
+        onClose();
+      }, 700);
+    }, 500);
   };
 
   return (
@@ -266,26 +299,45 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-white" />
                 </button>
 
-                <button
-                  onClick={() => handleSsoSubmit("GitHub Enterprise")}
-                  disabled={isAuthenticating}
-                  className="w-full p-4 rounded-xl bg-[#11192e] hover:bg-[#16213c] border border-white/15 hover:border-white/30 text-left transition-all flex items-center justify-between group shadow-md"
-                >
+                <div className="p-3.5 rounded-xl bg-[#11192e] border border-white/15 space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-white/10 text-white flex items-center justify-center font-bold">
                       GH
                     </div>
                     <div>
-                      <span className="text-sm font-bold text-white group-hover:text-cyan-300">
-                        Sign in with GitHub Enterprise
-                      </span>
-                      <span className="text-xs text-slate-400 block">
-                        OAuth 2.0 Webhook & PR Audit Clearance
-                      </span>
+                      <div className="text-sm font-bold text-white">
+                        Sign in with GitHub
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        Repository owner access & PR audit clearance
+                      </div>
                     </div>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-white" />
-                </button>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    <input
+                      value={githubUsername}
+                      onChange={(e) => setGithubUsername(e.target.value)}
+                      placeholder="GitHub username"
+                      className="w-full bg-[#09111c] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                    />
+                    <input
+                      type="email"
+                      value={githubEmail}
+                      onChange={(e) => setGithubEmail(e.target.value)}
+                      placeholder="GitHub email"
+                      className="w-full bg-[#09111c] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleGithubSignIn}
+                    disabled={isAuthenticating}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-black text-xs font-bold hover:opacity-95 transition-all"
+                  >
+                    {isAuthenticating ? "Verifying GitHub session..." : "Continue with GitHub"}
+                  </button>
+                </div>
 
                 <button
                   onClick={() => handleSsoSubmit("Okta / SAML 2.0")}

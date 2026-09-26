@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from ..github_service import (
+    build_git_login_instructions,
     fetch_github_open_prs,
     fetch_github_repo_metadata,
     get_github_diff_text,
@@ -29,6 +30,18 @@ def authorize_github_repo(payload: dict):
         "description": metadata.get("description") or "Imported GitHub repository",
         "private": bool(metadata.get("private")),
     }
+
+
+@router.post("/login")
+def generate_git_login(payload: dict):
+    username = str((payload or {}).get("username", "")).strip()
+    repo_name = str((payload or {}).get("repo_name", "")).strip()
+    remote_url = str((payload or {}).get("remote_url", "")).strip()
+
+    if not username:
+        raise HTTPException(status_code=400, detail="GitHub username is required")
+
+    return build_git_login_instructions(username, repo_name or "owner/repo", remote_url)
 
 
 @router.post("/scan")

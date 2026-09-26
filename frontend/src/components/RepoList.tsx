@@ -36,8 +36,12 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
   const [repoInput, setRepoInput] = useState<string>("owner/repo-name");
   const [prNumberInput, setPrNumberInput] = useState<string>("1");
   const [tokenInput, setTokenInput] = useState<string>("");
+  const [gitUsername, setGitUsername] = useState<string>("deepakbharathwaj123");
+  const [gitEmail, setGitEmail] = useState<string>("deepakbala2007@gmail.com");
+  const [gitLoginStatus, setGitLoginStatus] = useState<string>("");
   const [authStatus, setAuthStatus] = useState<string>("");
   const [isAuthorizing, setIsAuthorizing] = useState<boolean>(false);
+  const [isPreparingGitLogin, setIsPreparingGitLogin] = useState<boolean>(false);
   const webhookUrl = `${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/webhooks/github`;
 
   const copyWebhook = () => {
@@ -88,6 +92,40 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
       setAuthStatus(error instanceof Error ? error.message : "GitHub authorization failed.");
     } finally {
       setIsAuthorizing(false);
+    }
+  };
+
+  const handlePrepareGitLogin = async () => {
+    if (!gitUsername.trim()) {
+      setGitLoginStatus("Please enter your GitHub username before generating the login commands.");
+      return;
+    }
+
+    try {
+      setIsPreparingGitLogin(true);
+      const loginRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/github/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: gitUsername.trim(),
+          repo_name: repoInput.trim() || "owner/repo-name",
+          remote_url: `https://github.com/${repoInput.trim() || "owner/repo-name"}.git`,
+        }),
+      });
+
+      const loginData = await loginRes.json();
+      if (!loginRes.ok) {
+        throw new Error(loginData?.detail || "Git login instructions failed");
+      }
+
+      const commandBlock = loginData.commands.join("\n");
+      await navigator.clipboard.writeText(commandBlock);
+      setGitLoginStatus(`Git login commands ready. Copied to clipboard for ${loginData.username}.`);
+      setGitEmail(loginData.username.includes("@") ? loginData.username : gitEmail);
+    } catch (error) {
+      setGitLoginStatus(error instanceof Error ? error.message : "Git login setup failed.");
+    } finally {
+      setIsPreparingGitLogin(false);
     }
   };
 
@@ -181,6 +219,49 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo }) => {
           <div className="mt-4 flex items-start gap-2 rounded-xl border border-cyan-500/20 bg-cyan-500/5 px-3 py-2 text-xs text-cyan-200">
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
             <p className="leading-relaxed">{authStatus}</p>
+          </div>
+        )}
+      </div>
+
+      <div className="glass-card p-5 rounded-2xl border border-emerald-500/20 bg-[#0c1412]/90">
+        <div className="flex items-center justify-between gap-3 pb-4 border-b border-white/10">
+          <div>
+            <h3 className="text-sm font-extrabold text-white">Git identity & login setup</h3>
+            <p className="text-[11px] text-slate-400">Set your GitHub username and repo remote so local push/pull commands work properly.</p>
+          </div>
+          <button
+            onClick={handlePrepareGitLogin}
+            disabled={isPreparingGitLogin}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-black text-xs font-bold shadow-md shadow-emerald-500/20 disabled:opacity-60"
+          >
+            {isPreparingGitLogin ? "Preparing..." : "Generate Git Login"}
+          </button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label className="text-[10px] uppercase tracking-[0.18em] text-slate-400 block mb-1.5">GitHub username</label>
+            <input
+              value={gitUsername}
+              onChange={(e) => setGitUsername(e.target.value)}
+              className="w-full bg-[#070c14] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-emerald-400 outline-none"
+            />
+          </div>
+          <div>
+            <label className="text-[10px] uppercase tracking-[0.18em] text-slate-400 block mb-1.5">Git email</label>
+            <input
+              type="email"
+              value={gitEmail}
+              onChange={(e) => setGitEmail(e.target.value)}
+              className="w-full bg-[#070c14] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-emerald-400 outline-none"
+            />
+          </div>
+        </div>
+
+        {gitLoginStatus && (
+          <div className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs text-emerald-200">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+            <p className="leading-relaxed">{gitLoginStatus}</p>
           </div>
         )}
       </div>
