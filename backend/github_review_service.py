@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import sys
 from datetime import datetime
@@ -6,6 +7,63 @@ import requests
 
 from .database import get_db
 from .github_service import get_github_diff_text, get_github_json
+
+DEFAULT_POLICY_PRESETS = {
+    "strict": {
+        "auto_review_enabled": True,
+        "severity_threshold": "high",
+        "name": "Strict",
+        "description": "Fail on high or critical findings before merge.",
+    },
+    "balanced": {
+        "auto_review_enabled": True,
+        "severity_threshold": "medium",
+        "name": "Balanced",
+        "description": "Block medium and higher severity issues by default.",
+    },
+    "permissive": {
+        "auto_review_enabled": True,
+        "severity_threshold": "low",
+        "name": "Permissive",
+        "description": "Allow low-risk changes through while still reviewing higher findings.",
+    },
+}
+
+
+def get_policy_presets():
+    return {
+        name: {
+            **config,
+            "severity_threshold": str(config.get("severity_threshold", "medium")).lower(),
+        }
+        for name, config in DEFAULT_POLICY_PRESETS.items()
+    }
+
+
+def send_policy_alert(repo_full_name, pr_number, risk_level, summary, policy_context=None):
+    webhook_url = os.getenv("SLACK_WEBHOOK_URL") or os.getenv("TEAMS_WEBHOOK_URL")
+    if not webhook_url:
+        return {"status": "skipped", "reason": "No webhook configured"}
+
+    risk_text = str(risk_level or "unknown").upper()
+    policy_context = policy_context or {}
+    threshold = str(policy_context.get("threshold") or "medium").upper()
+    decision = str(policy_context.get("decision") or "review").upper()
+    repo_name = repo_full_name or "unknown/repo"
+
+    payload = {
+        "text": (
+            f"ReleaseGuard policy alert for {repo_name} | PR #{pr_number}\n"
+            f"Risk: {risk_text}\n"
+            f"Threshold: {threshold}\n"
+            f"Decision: {decision}\n"
+            f"Summary: {summary}"
+        )
+    }
+
+    response = requests.post(webhook_url, json=payload, timeout=30)
+    response.raise_for_status()
+    return {"status": "sent", "channel": "slack", "payload": payload}
 
 
 def build_review_summary(scan_result):
@@ -110,7 +168,10 @@ def evaluate_review_policy(repo_id, risk_level):
         threshold = "medium"
 
     order = {"low": 0, "medium": 1, "high": 2, "critical": 3}
-    allowed = auto_review_enabled and order.get(risk_key, 0) <= order.get(threshold, 1)
+    if not auto_review_enabled:
+        allowed = True
+    else:
+        allowed = order.get(risk_key, 0) <= order.get(threshold, 1)
 
     return {
         "repo_id": repo_id,
@@ -194,6 +255,7 @@ def trigger_review_for_repo(repo_full_name, token, pr_number, repo_id=None, repo
     policy = evaluate_review_policy(repo_id, risk_level)
     if not policy["allowed"]:
         summary = f"{summary}\n\nPolicy gate: {policy['decision'].upper()} - risk {risk_level} exceeds repo threshold {policy['threshold'].upper()}"
+        send_policy_alert(repo_name, pr_number, risk_level, summary, policy)
 
     comment = comment_fn(repo_name, pr_number, token, summary)
     sha = (pr_head.get("sha") or (pr_data or {}).get("head", {}).get("sha") if isinstance(pr_data, dict) and isinstance((pr_data or {}).get("head"), dict) else "") or ""
