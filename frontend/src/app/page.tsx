@@ -6,7 +6,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import {
   Activity,
@@ -55,6 +55,11 @@ export default function Home() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [iconOnlyMode, setIconOnlyMode] = useState<boolean>(false);
+  const isHydrated = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
 
   const fetchAllData = async () => {
     try {
@@ -202,6 +207,10 @@ export default function Home() {
     setActiveTab("prs");
     await handleSelectPr(newPrId);
   };
+
+  if (!isHydrated) {
+    return <main className="min-h-screen bg-[#07090e]" aria-busy="true" />;
+  }
 
   const blockedCount = prs.filter((p) => p.risk_level === "CRITICAL" || p.verdict === "NO-GO").length;
   const isCompactSidebar = sidebarCollapsed || iconOnlyMode;
