@@ -99,7 +99,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-xs text-slate-500">Example: alex@example.com with a password of at least 12 characters.</p>
+          <p className="mt-6 text-center text-xs text-slate-500">[Local example login: alex@example.com / ReleaseGuardDemo2026!]</p>
 
           <p className="mt-5 text-center text-sm text-slate-400">
             {mode === "login" ? "New to ReleaseGuard?" : "Already have an account?"}{" "}
