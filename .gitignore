@@ -116,8 +116,8 @@ build/
 # Add project-specific patterns below
 # ============================================
 
-Lib/
-Scripts/
+/Lib/
+/Scripts/
 *.db
 *.sqlite
 *.sqlite3
