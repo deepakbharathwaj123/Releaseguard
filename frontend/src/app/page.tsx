@@ -7,7 +7,6 @@
 "use client";
 
 import React, { useState, useEffect, useSyncExternalStore } from "react";
-import { useRouter } from "next/navigation";
 import {
   Activity,
   Bot,
@@ -33,10 +32,7 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { UserProfile } from "@/types/auth";
 import { apiFetch, API_BASE } from "@/lib/api";
 
-const LOGIN_URL = "/login";
-
 export default function Home() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>("prs");
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [repos, setRepos] = useState<RepoItem[]>([]);
@@ -85,30 +81,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const redirectToLogin = () => router.replace(LOGIN_URL);
-    window.addEventListener("releaseguard:unauthorized", redirectToLogin);
-    return () => window.removeEventListener("releaseguard:unauthorized", redirectToLogin);
-  }, [router]);
-
-  useEffect(() => {
-    let active = true;
-    const restoreSession = async () => {
-      try {
-        const response = await apiFetch(`${API_BASE}/api/auth/me`);
-        if (!response.ok) {
-          return;
-        }
-        const user = await response.json();
-        if (!active) return;
-        setCurrentUser(user);
-        await fetchAllData();
-      } catch {
-        router.replace(LOGIN_URL);
-      }
-    };
-    void restoreSession();
-    return () => { active = false; };
-  }, [router]);
+    void fetchAllData();
+  }, []);
 
   const handleSelectPr = async (prId: string) => {
     setSelectedPrId(prId);
@@ -124,12 +98,7 @@ export default function Home() {
   };
 
   const handleLogout = async () => {
-    try {
-      await apiFetch(`${API_BASE}/api/auth/logout`, { method: "POST" });
-    } finally {
-      setCurrentUser(null);
-      router.replace(LOGIN_URL);
-    }
+    setCurrentUser(null);
   };
 
   const handleSelectRepo = async (repoId: string, repoFullName: string) => {
