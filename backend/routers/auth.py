@@ -233,6 +233,48 @@ def login(payload: dict, response: Response):
     return _public_user(user)
 
 
+GUEST_EMAIL = "guest@releaseguard.demo"
+GUEST_NAME = "Guest User"
+GUEST_PASSWORD = "guest-demo-releaseguard-2024"
+
+
+@router.post("/guest")
+def guest_login(response: Response):
+    """Auto-creates a shared guest account and issues a session immediately."""
+    conn = get_db()
+    user = conn.execute(
+        "SELECT id, name, email FROM users WHERE email = ? COLLATE NOCASE",
+        (GUEST_EMAIL,),
+    ).fetchone()
+
+    if user is None:
+        user_id = "user_guest_demo"
+        now = datetime.now(timezone.utc).isoformat()
+        existing_count = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+        try:
+            conn.execute(
+                "INSERT INTO users (id, name, email, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+                (user_id, GUEST_NAME, GUEST_EMAIL, _hash_password(GUEST_PASSWORD), now, now),
+            )
+            conn.commit()
+            if existing_count == 0:
+                conn.execute("UPDATE repositories SET owner_id = ? WHERE owner_id IS NULL", (user_id,))
+                conn.commit()
+        except Exception:
+            conn.rollback()
+        user = conn.execute(
+            "SELECT id, name, email FROM users WHERE email = ? COLLATE NOCASE",
+            (GUEST_EMAIL,),
+        ).fetchone()
+
+    conn.close()
+    if user is None:
+        raise HTTPException(status_code=500, detail="Could not create guest session")
+
+    _issue_session(user["id"], response)
+    return _public_user(user)
+
+
 @router.get("/me")
 def current_user(request: Request):
     user = _request_user(request)

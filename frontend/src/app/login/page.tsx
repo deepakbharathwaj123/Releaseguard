@@ -8,7 +8,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, KeyRound, ShieldCheck } from "lucide-react";
+import { ArrowRight, KeyRound, ShieldCheck, UserRound } from "lucide-react";
 import { apiFetch, API_BASE } from "@/lib/api";
 
 export default function LoginPage() {
@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -39,6 +40,23 @@ export default function LoginPage() {
       setError(submitError instanceof Error ? submitError.message : "Unable to reach the ReleaseGuard API");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleGuest = async () => {
+    setError("");
+    setGuestLoading(true);
+    try {
+      const response = await apiFetch(`${API_BASE}/api/auth/guest`, { method: "POST" });
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result?.detail || "Could not start guest session");
+      }
+      router.replace("/");
+    } catch (guestError) {
+      setError(guestError instanceof Error ? guestError.message : "Unable to reach the ReleaseGuard API");
+    } finally {
+      setGuestLoading(false);
     }
   };
 
@@ -92,14 +110,32 @@ export default function LoginPage() {
 
             {error && <p role="alert" className="rounded-lg border border-rose-400/30 bg-rose-400/10 px-3.5 py-3 text-sm text-rose-200">{error}</p>}
 
-            <button type="submit" disabled={submitting} className="flex w-full items-center justify-center gap-2 rounded-lg bg-cyan-400 px-4 py-3 text-sm font-bold text-[#071018] transition hover:bg-cyan-300 disabled:cursor-wait disabled:opacity-60">
+            <button type="submit" disabled={submitting || guestLoading} className="flex w-full items-center justify-center gap-2 rounded-lg bg-cyan-400 px-4 py-3 text-sm font-bold text-[#071018] transition hover:bg-cyan-300 disabled:cursor-wait disabled:opacity-60">
               {mode === "login" ? <KeyRound size={17} /> : <ShieldCheck size={17} />}
               <span>{submitting ? "Please wait..." : mode === "login" ? "Sign in" : "Create account"}</span>
               {!submitting && <ArrowRight size={16} />}
             </button>
           </form>
 
-          <p className="mt-7 text-center text-sm text-slate-400">
+          <div className="mt-5 flex items-center gap-3">
+            <span className="h-px flex-1 bg-white/10" />
+            <span className="text-xs text-slate-500">or</span>
+            <span className="h-px flex-1 bg-white/10" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGuest}
+            disabled={guestLoading || submitting}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-cyan-400/40 hover:bg-white/10 disabled:cursor-wait disabled:opacity-60"
+          >
+            <UserRound size={17} />
+            <span>{guestLoading ? "Starting guest session..." : "Continue as Guest"}</span>
+          </button>
+
+          <p className="mt-6 text-center text-xs text-slate-500">Guest access is read-only and shared. Do not enter real credentials.</p>
+
+          <p className="mt-5 text-center text-sm text-slate-400">
             {mode === "login" ? "New to ReleaseGuard?" : "Already have an account?"}{" "}
             <button type="button" onClick={() => { setError(""); setMode(mode === "login" ? "register" : "login"); }} className="font-semibold text-cyan-300 hover:text-cyan-200">
               {mode === "login" ? "Create an account" : "Sign in"}
