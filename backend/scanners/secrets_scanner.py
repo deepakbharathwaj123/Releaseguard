@@ -18,7 +18,7 @@ SECRETS_PATTERNS = [
     },
     {
         "name": "AWS Secret Access Key",
-        "pattern": r"(?i)aws.{0,20}secret.{0,20}['\""][0-9a-zA-Z/+]{40}['\""]",
+        "pattern": r'''(?i)aws.{0,20}secret.{0,20}['"][0-9a-zA-Z/+]{40}['"]''',
         "severity": "CRITICAL",
         "title": "Hardcoded AWS Secret Access Key Detected",
         "description": "An AWS Secret Access Key was found hardcoded. Combined with the Access Key ID this provides full programmatic AWS access.",
@@ -34,7 +34,7 @@ SECRETS_PATTERNS = [
     },
     {
         "name": "IBM Cloud API Key",
-        "pattern": r"(?i)(ibm.{0,10}api.{0,10}key|IBMCLOUD_API_KEY)\s*[=:]\s*['\""]?[a-zA-Z0-9_\-]{40,}['\""]?",
+        "pattern": r'''(?i)(ibm.{0,10}api.{0,10}key|IBMCLOUD_API_KEY)\s*[=:]\s*['\"]?[a-zA-Z0-9_\-]{40,}['\"]?''',
         "severity": "CRITICAL",
         "title": "Hardcoded IBM Cloud API Key Detected",
         "description": "An IBM Cloud API key was found hardcoded, which could allow unauthorized access to IBM Cloud services.",
@@ -66,7 +66,7 @@ SECRETS_PATTERNS = [
     },
     {
         "name": "Hardcoded Password",
-        "pattern": r"(?i)(password|passwd|pwd)\s*[=:]\s*['\""][^'\"\"]{6,}['\""]",
+        "pattern": r'''(?i)(password|passwd|pwd)\s*[=:]\s*['\"][^'\"]{6,}['\"]''',
         "severity": "HIGH",
         "title": "Hardcoded Password Detected",
         "description": "A plaintext password was found hardcoded in the source code.",
@@ -74,7 +74,7 @@ SECRETS_PATTERNS = [
     },
     {
         "name": "JWT Secret",
-        "pattern": r"(?i)(jwt.{0,10}secret|secret.{0,10}key)\s*[=:]\s*['\""][^'\"\"]{8,}['\""]",
+        "pattern": r'''(?i)(jwt.{0,10}secret|secret.{0,10}key)\s*[=:]\s*['\"][^'\"]{8,}['\"]''',
         "severity": "HIGH",
         "title": "Hardcoded JWT Secret Detected",
         "description": "A JWT signing secret was found hardcoded. Attackers can forge valid tokens if they obtain it.",
