@@ -1,3 +1,9 @@
+# =============================================================
+# ReleaseGuard AI — Built with IBM Bob
+# © IBM Bob | ibm.com/products/watsonx
+# =============================================================
+
+
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime

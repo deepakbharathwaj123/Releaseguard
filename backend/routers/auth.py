@@ -1,3 +1,9 @@
+# =============================================================
+# ReleaseGuard AI — Built with IBM Bob
+# © IBM Bob | ibm.com/products/watsonx
+# =============================================================
+
+
 import hashlib
 import hmac
 import os

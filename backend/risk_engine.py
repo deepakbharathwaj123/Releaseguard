@@ -1,3 +1,9 @@
+# =============================================================
+# ReleaseGuard AI — Built with IBM Bob
+# © IBM Bob | ibm.com/products/watsonx
+# =============================================================
+
+
 from typing import List, Dict, Any
 
 SEVERITY_WEIGHTS = {

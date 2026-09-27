@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: releaseguard-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: FRONTEND_ORIGINS
+        value: https://frontend-five-omega-31.vercel.app
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: PYTHON_VERSION
+        value: "3.11.0"

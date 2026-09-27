@@ -1,17 +1,14 @@
-# ============================================
-# WATSONX HACKATHON - SECURITY .GITIGNORE
+﻿# ============================================
+# RELEASEGUARD AI - SECURITY .GITIGNORE
 # ============================================
 # DO NOT REMOVE OR MODIFY SECURITY PATTERNS
 # ============================================
 
 # ============================================
-# AI ASSISTANT SESSION FILES (CRITICAL)
+# IBM BOB SESSION FILES (CRITICAL)
 # ============================================
 # NOTE: bob_sessions/ folder is REQUIRED for project submission
 # Live session files are excluded, but exported reports must be included
-.copilot/
-.cursor/
-.codeium/
 
 # ============================================
 # CREDENTIALS AND SECRETS (CRITICAL)
@@ -125,4 +122,4 @@ Scripts/
 *.sqlite
 *.sqlite3
 frontend/node_modules/
-frontend/.next/
+frontend/.next/

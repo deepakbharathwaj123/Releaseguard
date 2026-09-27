@@ -1,3 +1,9 @@
+# =============================================================
+# ReleaseGuard AI — Built with IBM Bob
+# © IBM Bob | ibm.com/products/watsonx
+# =============================================================
+
+
 import uuid
 from typing import List, Dict, Any
 from .secrets_scanner import scan_secrets

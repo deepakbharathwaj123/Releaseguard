@@ -1,3 +1,9 @@
+# =============================================================
+# ReleaseGuard AI — Built with IBM Bob
+# © IBM Bob | ibm.com/products/watsonx
+# =============================================================
+
+
 from .orchestrator import run_release_orchestrator
 from .security_agent import run_security_agent
 from .infra_agent import run_infra_agent

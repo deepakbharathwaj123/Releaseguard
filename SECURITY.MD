@@ -1,4 +1,4 @@
-# Security Guidelines for Watsonx Hackathon
+# Security Guidelines for ReleaseGuard AI
 
 ## 🔒 Credential Management
 
@@ -9,7 +9,7 @@
 - ✅ Keep `.env` in `.gitignore` (already configured)
 - ✅ Use `process.env.VARIABLE_NAME` in your code
 - ✅ Review your commits before pushing (`git diff`)
-- ✅ Use placeholders when asking AI assistants for help
+- ✅ Use placeholders when working with IBM Bob
 
 ### ❌ DON'T:
 
@@ -18,13 +18,13 @@
 - ❌ Never share credentials in code comments
 - ❌ Never commit files with "credential", "secret", or "password" in the name
 - ❌ Never remove patterns from `.gitignore` or `.bobignore`
-- ❌ Never paste credentials in AI assistant prompts
+- ❌ Never paste credentials into prompts
 
-## 🤖 Using AI Assistants Safely (Bob, Copilot, etc.)
+## 🤖 Using IBM Bob Safely
 
 ### The Risk
 
-AI assistants log your prompts and code in session history files. If you share credentials with them, those credentials may be logged!
+IBM Bob logs your prompts and code in session history files. If you share credentials with Bob, those credentials may be logged!
 
 ### Safe Practices:
 
@@ -41,7 +41,7 @@ AI assistants log your prompts and code in session history files. If you share c
 
 ### Protection:
 
-- `.bobignore` prevents Bob from logging credential patterns
+- `.bobignore` prevents IBM Bob from logging credential patterns
 - `.gitignore` prevents session files from being committed
 - But YOU must not share credentials in prompts!
 

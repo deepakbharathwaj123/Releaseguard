@@ -1,3 +1,9 @@
+// =============================================================
+// ReleaseGuard AI — Built with IBM Bob
+// © IBM Bob | ibm.com/products/watsonx
+// =============================================================
+
+
 import type { Metadata } from "next";
 import React from "react";
 import "./globals.css";

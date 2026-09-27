@@ -1,3 +1,9 @@
+# =============================================================
+# ReleaseGuard AI — Built with IBM Bob
+# © IBM Bob | ibm.com/products/watsonx
+# =============================================================
+
+
 from .runner import run_all_scanners
 from .secrets_scanner import scan_secrets
 from .config_scanner import scan_config
