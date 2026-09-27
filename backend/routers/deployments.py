@@ -3,7 +3,8 @@ import uuid
 from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, HTTPException
-from ..database import get_db
+from ..database import get_current_user_id, get_db
+from .auth import user_owns_repository
 from ..models import IncidentCreateRequest
 from ..agents import run_incident_agent
 
@@ -119,14 +120,17 @@ def get_release_health_summary(repo_id: str):
 def list_deployments():
     conn = get_db()
     cursor = conn.cursor()
+    user_id = get_current_user_id()
+    owner_filter = "WHERE r.owner_id = ?" if user_id else ""
 
-    cursor.execute("""
+    cursor.execute(f"""
         SELECT d.*, r.name as repo_name, p.title as pr_title, p.pr_number
         FROM deployments d
         JOIN repositories r ON d.repo_id = r.id
         LEFT JOIN pull_requests p ON d.pr_id = p.id
+        {owner_filter}
         ORDER BY d.deployed_at DESC
-    """)
+    """, (user_id,) if user_id else ())
     rows = cursor.fetchall()
     conn.close()
 
@@ -244,14 +248,17 @@ def execute_release_rollback(repo_id: str):
 def list_incidents():
     conn = get_db()
     cursor = conn.cursor()
+    user_id = get_current_user_id()
+    owner_filter = "WHERE r.owner_id = ?" if user_id else ""
 
-    cursor.execute("""
+    cursor.execute(f"""
         SELECT i.*, r.name as repo_name, p.title as pr_title, p.pr_number, p.author as pr_author
         FROM incidents i
         JOIN repositories r ON i.repo_id = r.id
         LEFT JOIN pull_requests p ON i.correlated_pr_id = p.id
+        {owner_filter}
         ORDER BY i.created_at DESC
-    """)
+    """, (user_id,) if user_id else ())
     rows = cursor.fetchall()
     conn.close()
 
@@ -294,6 +301,10 @@ def simulate_incident(req: IncidentCreateRequest):
     Step 11: On incident, calls IBM Bob Incident Analysis Agent,
     Step 12: Stores incident report and links to PR and deployment.
     """
+    user_id = get_current_user_id()
+    if user_id and not user_owns_repository(user_id, req.repo_id):
+        raise HTTPException(status_code=404, detail="Repository not found")
+
     conn = get_db()
     cursor = conn.cursor()
 

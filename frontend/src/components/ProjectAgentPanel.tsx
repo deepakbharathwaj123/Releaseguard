@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Bot,
@@ -73,7 +74,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
     setMemoryData(nextMemory);
 
     try {
-      await fetch(`${API_BASE}/api/agent/memory/import`, {
+      await apiFetch(`${API_BASE}/api/agent/memory/import`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ project: projectKey, memory: nextMemory }),
@@ -95,7 +96,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
     setTimeline(nextTimeline);
 
     try {
-      await fetch(`${API_BASE}/api/agent/actions`, {
+      await apiFetch(`${API_BASE}/api/agent/actions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -112,7 +113,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
 
   const loadMemory = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/agent/memory?project=${encodeURIComponent(projectKey)}`);
+      const response = await apiFetch(`${API_BASE}/api/agent/memory?project=${encodeURIComponent(projectKey)}`);
       if (!response.ok) {
         throw new Error(`Memory fetch failed: ${response.status}`);
       }
@@ -123,7 +124,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
       setMemoryData(mergedMemory);
       setTimeline(storedTimeline);
 
-      const historyResponse = await fetch(`${API_BASE}/api/agent/history?project=${encodeURIComponent(projectKey)}`);
+      const historyResponse = await apiFetch(`${API_BASE}/api/agent/history?project=${encodeURIComponent(projectKey)}`);
       if (historyResponse.ok) {
         const historyData = await historyResponse.json();
         setChatHistory(historyData.history || []);
@@ -148,7 +149,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
     URL.revokeObjectURL(url);
 
     try {
-      await fetch(`${API_BASE}/api/agent/memory/export?project=${encodeURIComponent(projectKey)}`);
+      await apiFetch(`${API_BASE}/api/agent/memory/export?project=${encodeURIComponent(projectKey)}`);
     } catch (error) {
       console.warn("Backend export endpoint unavailable; local JSON file still downloaded.", error);
     }
@@ -164,7 +165,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
       const normalized = { project: projectKey, ...parsed, projectKey };
       setMemoryData(normalized);
       localStorage.setItem(`releaseguard-agent-memory-${projectKey}`, JSON.stringify(normalized));
-      await fetch(`${API_BASE}/api/agent/memory/import`, {
+      await apiFetch(`${API_BASE}/api/agent/memory/import`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ project: projectKey, memory: normalized }),
@@ -207,7 +208,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
 
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_BASE}/api/agent/chat`, {
+      const response = await apiFetch(`${API_BASE}/api/agent/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -238,7 +239,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
   const handleRunScan = async () => {
     try {
       const repoName = repos[0]?.full_name || "ops-pilot/core-banking-service";
-      const res = await fetch(`${API_BASE}/api/prs/scan`, {
+      const res = await apiFetch(`${API_BASE}/api/prs/scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -271,7 +272,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
   const handleSimulateIncident = async () => {
     try {
       const repoId = repos[0]?.id || "repo_core_banking";
-      const response = await fetch(`${API_BASE}/api/deployments/incidents/simulate`, {
+      const response = await apiFetch(`${API_BASE}/api/deployments/incidents/simulate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -304,7 +305,7 @@ export const ProjectAgentPanel: React.FC<ProjectAgentPanelProps> = ({
       if (!prId) {
         throw new Error("No PR is available for rollback simulation.");
       }
-      const response = await fetch(`${API_BASE}/api/prs/${prId}/execute-rollback`, { method: "POST" });
+      const response = await apiFetch(`${API_BASE}/api/prs/${prId}/execute-rollback`, { method: "POST" });
       if (!response.ok) throw new Error(`rollback failed: ${response.status}`);
       const data = await response.json();
       const message = `Rollback simulation completed. ${data.status || "Rollback executed successfully."}`;

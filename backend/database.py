@@ -1,19 +1,49 @@
 import os
 import json
 import sqlite3
+from contextvars import ContextVar
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "releaseguard.db")
+CURRENT_USER_ID: ContextVar[Optional[str]] = ContextVar("current_user_id", default=None)
 
 def get_db():
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
     return conn
 
+
+def get_current_user_id():
+    return CURRENT_USER_ID.get()
+
 def init_db():
     conn = get_db()
     cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+        password_hash TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS user_sessions (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        token_hash TEXT NOT NULL UNIQUE,
+        expires_at TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    """)
+
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_sessions_token_hash ON user_sessions(token_hash)")
 
     # Repositories table
     cursor.execute("""
@@ -28,6 +58,11 @@ def init_db():
         updated_at TEXT NOT NULL
     );
     """)
+
+    repository_columns = {row["name"] for row in cursor.execute("PRAGMA table_info(repositories)")}
+    if "owner_id" not in repository_columns:
+        cursor.execute("ALTER TABLE repositories ADD COLUMN owner_id TEXT REFERENCES users(id) ON DELETE SET NULL")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_repositories_owner_id ON repositories(owner_id)")
 
     # Pull Requests table
     cursor.execute("""

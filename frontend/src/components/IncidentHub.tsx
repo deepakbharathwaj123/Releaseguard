@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
 import React, { useState, useEffect } from "react";
 import { 
   Activity, 
@@ -83,7 +84,7 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
   const fetchTelemetry = async () => {
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
-      const res = await fetch(`${apiBase}/api/deployments/telemetry`);
+      const res = await apiFetch(`${apiBase}/api/deployments/telemetry`);
       if (res.ok) {
         setTelemetryData(await res.json());
       }

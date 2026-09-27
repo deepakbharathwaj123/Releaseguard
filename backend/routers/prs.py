@@ -2,7 +2,7 @@ import json
 import uuid
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException
-from ..database import get_db
+from ..database import get_current_user_id, get_db
 from ..models import ManualScanRequest
 from ..github_service import fetch_github_open_prs, get_github_diff_text, normalize_repository_name
 from .webhooks import process_pr_pipeline
@@ -21,8 +21,12 @@ def list_pull_requests(repo_id: Optional[str] = None):
         JOIN repositories r ON p.repo_id = r.id
     """
     params = []
+    user_id = get_current_user_id()
+    if user_id:
+        query += " WHERE r.owner_id = ?"
+        params.append(user_id)
     if repo_id:
-        query += " WHERE p.repo_id = ?"
+        query += " AND p.repo_id = ?" if user_id else " WHERE p.repo_id = ?"
         params.append(repo_id)
 
     query += " ORDER BY p.risk_score DESC, p.created_at DESC"
@@ -187,6 +191,17 @@ def trigger_github_scan(payload: dict):
         raise HTTPException(status_code=400, detail="GitHub PAT, repo name, and PR number are required")
 
     normalized_repo = normalize_repository_name(repo_name)
+    user_id = get_current_user_id()
+    if user_id:
+        repo_id = f"repo_{normalized_repo.replace('/', '_')}"
+        conn = get_db()
+        owned_repo = conn.execute(
+            "SELECT 1 FROM repositories WHERE id = ? AND owner_id = ?",
+            (repo_id, user_id),
+        ).fetchone()
+        conn.close()
+        if owned_repo is None:
+            raise HTTPException(status_code=404, detail="Repository not found")
     diff_text = get_github_diff_text(token, normalized_repo, pr_number)
     metadata = fetch_github_open_prs(token, normalized_repo, 1)
     pr_details = metadata[0] if metadata else {}

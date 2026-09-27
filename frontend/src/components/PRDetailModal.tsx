@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
 import React, { useState } from "react";
 import { 
   X, 
@@ -125,7 +126,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
 
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
-      const res = await fetch(`${apiBase}/api/prs/${pr.id}/chat`, {
+      const res = await apiFetch(`${apiBase}/api/prs/${pr.id}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: textToSend })
@@ -158,7 +159,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
     setIsSubmittingOverride(true);
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
-      await fetch(`${apiBase}/api/prs/${pr.id}/override`, {
+      await apiFetch(`${apiBase}/api/prs/${pr.id}/override`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -2,7 +2,7 @@ import uuid
 
 from fastapi import APIRouter, HTTPException
 from typing import List, Optional
-from ..database import get_db
+from ..database import get_current_user_id, get_db
 from ..github_service import fetch_github_repo_metadata, normalize_repository_name
 
 router = APIRouter(prefix="/api/repos", tags=["repos"])
@@ -291,13 +291,18 @@ def bulk_import_repositories(payload: dict):
     conn = get_db()
     cursor = conn.cursor()
     created = []
+    user_id = get_current_user_id()
 
     for repo_name in repos:
         normalized = normalize_repository_name(str(repo_name).strip())
         metadata = fetch_github_repo_metadata(token, normalized)
         repo_id = f"repo_{normalized.replace('/', '_')}"
-        cursor.execute("SELECT id FROM repositories WHERE id = ?", (repo_id,))
-        if cursor.fetchone() is None:
+        cursor.execute("SELECT * FROM repositories WHERE id = ?", (repo_id,))
+        existing = cursor.fetchone()
+        if existing is not None and user_id and existing["owner_id"] not in (None, user_id):
+            conn.close()
+            raise HTTPException(status_code=404, detail="Repository not found")
+        if existing is None:
             cursor.execute(
                 """
                 INSERT INTO repositories (id, name, full_name, description, default_branch, webhook_active, created_at, updated_at)
@@ -311,6 +316,8 @@ def bulk_import_repositories(payload: dict):
                     metadata.get("default_branch") or "main",
                 ),
             )
+        if user_id:
+            cursor.execute("UPDATE repositories SET owner_id = ? WHERE id = ? AND owner_id IS NULL", (user_id, repo_id))
         created.append({
             "id": repo_id,
             "name": metadata.get("name") or normalized.split("/")[-1],
@@ -333,17 +340,19 @@ def bulk_import_repositories(payload: dict):
 def list_repositories():
     conn = get_db()
     cursor = conn.cursor()
+    user_id = get_current_user_id()
+    owner_filter = " AND r.owner_id = ?" if user_id else ""
 
-    cursor.execute("""
+    cursor.execute(f"""
         SELECT r.*, 
                COUNT(p.id) as open_prs_count,
                AVG(p.risk_score) as average_risk_score
         FROM repositories r
         LEFT JOIN pull_requests p ON r.id = p.repo_id AND p.status = 'open'
-        WHERE r.webhook_active = 1
+        WHERE r.webhook_active = 1{owner_filter}
         GROUP BY r.id
         ORDER BY r.created_at DESC
-    """)
+    """, (user_id,) if user_id else ())
     rows = cursor.fetchall()
     conn.close()
 
@@ -433,8 +442,12 @@ def connect_github_repo(payload: dict):
     repo_id = f"repo_{normalized.replace('/', '_')}"
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id FROM repositories WHERE id = ?", (repo_id,))
+    user_id = get_current_user_id()
+    cursor.execute("SELECT * FROM repositories WHERE id = ?", (repo_id,))
     exists = cursor.fetchone()
+    if exists is not None and user_id and exists["owner_id"] not in (None, user_id):
+        conn.close()
+        raise HTTPException(status_code=404, detail="Repository not found")
 
     if not exists:
         cursor.execute(
@@ -444,6 +457,9 @@ def connect_github_repo(payload: dict):
             """,
             (repo_id, metadata.get("name", normalized.split("/")[-1]), metadata.get("full_name", normalized), metadata.get("description") or "Imported GitHub repository", metadata.get("default_branch") or "main")
         )
+
+    if user_id:
+        cursor.execute("UPDATE repositories SET owner_id = ? WHERE id = ? AND owner_id IS NULL", (user_id, repo_id))
 
     conn.commit()
     conn.close()

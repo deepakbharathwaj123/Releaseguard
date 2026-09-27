@@ -86,10 +86,10 @@
 ### 1. Backend (FastAPI)
 ```bash
 # From workspace root:
-py -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
+py -m uvicorn backend.main:app --host 127.0.0.1 --port 8001 --reload
 ```
-API runs at: `http://localhost:8000`  
-Interactive Swagger docs: `http://localhost:8000/docs`
+API runs at: `http://localhost:8001`
+Interactive Swagger docs: `http://localhost:8001/docs`
 
 ### 2. Frontend (Next.js)
 ```bash
@@ -97,6 +97,12 @@ cd frontend
 npm run dev
 ```
 Website runs at: `http://localhost:3000`
+
+### 3. Accounts and local data
+
+Open `http://localhost:3000/login` and create an account with a password of at least 12 characters. Accounts, salted scrypt password hashes, revocable sessions, connected repositories, pull requests, and related release data are stored in `backend/releaseguard.db` (SQLite). Session cookies are HTTP-only and expire after seven days. The first account claims any repositories already in the local database; repositories added later belong to the account that connected them.
+
+For HTTPS deployments, set `SESSION_COOKIE_SECURE=true` and set `FRONTEND_ORIGINS` to the exact frontend origin(s), separated by commas. Do not expose the development server or SQLite file as a production deployment without an appropriate backup and access-control plan.
 
 ---
 

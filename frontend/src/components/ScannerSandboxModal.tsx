@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
 import React, { useState } from "react";
 import { 
   X, 
@@ -173,7 +174,7 @@ export const ScannerSandboxModal: React.FC<ScannerSandboxModalProps> = ({
 
       setScanStep("4. Running Bob AI review checks (orchestrator, security, rollback)...");
       const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
-      const resp = await fetch(`${apiBase}/api/prs/scan`, {
+      const resp = await apiFetch(`${apiBase}/api/prs/scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

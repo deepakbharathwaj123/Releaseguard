@@ -1,11 +1,23 @@
+import pytest
 from fastapi.testclient import TestClient
 
+from backend import database
 from backend.main import app
 
-client = TestClient(app)
 
 
-def test_agent_chat_endpoint_returns_reply():
+@pytest.fixture
+def client(monkeypatch, tmp_path):
+    monkeypatch.setattr(database, "DB_FILE", str(tmp_path / "agent.db"))
+    with TestClient(app) as test_client:
+        test_client.post(
+            "/api/auth/register",
+            json={"name": "Agent Tester", "email": "agent@example.com", "password": "agent test password"},
+        )
+        yield test_client
+
+
+def test_agent_chat_endpoint_returns_reply(client):
     response = client.post(
         "/api/agent/chat",
         json={"message": "Analyze repo health and list the biggest risks.", "project": "demo-project"},
@@ -18,7 +30,7 @@ def test_agent_chat_endpoint_returns_reply():
     assert len(payload["reply"]) > 0
 
 
-def test_agent_history_endpoint_returns_items():
+def test_agent_history_endpoint_returns_items(client):
     project_name = "demo-project-history"
     client.post(
         "/api/agent/chat",
@@ -33,7 +45,7 @@ def test_agent_history_endpoint_returns_items():
     assert len(history["history"]) >= 1
 
 
-def test_agent_memory_roundtrip_export_import():
+def test_agent_memory_roundtrip_export_import(client):
     project_name = "demo-project-memory"
     memory_payload = {
         "project": project_name,
@@ -55,7 +67,7 @@ def test_agent_memory_roundtrip_export_import():
     assert exported["memory"]["status"] == "stable"
 
 
-def test_agent_action_log_persistence():
+def test_agent_action_log_persistence(client):
     project_name = "demo-project-actions"
     response = client.post(
         "/api/agent/actions",

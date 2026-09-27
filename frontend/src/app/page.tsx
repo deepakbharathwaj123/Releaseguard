@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Activity,
   Bot,
@@ -14,7 +15,6 @@ import {
   Sparkles,
   SquareTerminal,
 } from "lucide-react";
-import { AuthModal } from "@/components/AuthModal";
 import { TeamAuthTab } from "@/components/TeamAuthTab";
 import { WorkflowArchitectureBanner } from "@/components/WorkflowArchitectureBanner";
 import { PRList, PRSummary } from "@/components/PRList";
@@ -25,11 +25,14 @@ import { IncidentHub } from "@/components/IncidentHub";
 import { ProjectAgentPanel } from "@/components/ProjectAgentPanel";
 import { CommandPalette } from "@/components/CommandPalette";
 import { UserProfile } from "@/types/auth";
+import { apiFetch, API_BASE } from "@/lib/api";
+
+const LOGIN_URL = "/login";
 
 export default function Home() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>("prs");
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(true);
   const [repos, setRepos] = useState<RepoItem[]>([]);
   const [prs, setPrs] = useState<PRSummary[]>([]);
   const [deployments, setDeployments] = useState<any[]>([]);
@@ -47,17 +50,15 @@ export default function Home() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [iconOnlyMode, setIconOnlyMode] = useState<boolean>(false);
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
-
   const fetchAllData = async () => {
     try {
       setLoading(true);
       setApiError(null);
       const [reposRes, prsRes, depsRes, incsRes] = await Promise.all([
-        fetch(`${API_BASE}/api/repos`),
-        fetch(`${API_BASE}/api/prs`),
-        fetch(`${API_BASE}/api/deployments`),
-        fetch(`${API_BASE}/api/deployments/incidents`),
+        apiFetch(`${API_BASE}/api/repos`),
+        apiFetch(`${API_BASE}/api/prs`),
+        apiFetch(`${API_BASE}/api/deployments`),
+        apiFetch(`${API_BASE}/api/deployments/incidents`),
       ]);
 
       if (reposRes.ok) setRepos(await reposRes.json());
@@ -73,21 +74,35 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("releaseguard-user");
-    if (savedUser) {
+    const redirectToLogin = () => router.replace(LOGIN_URL);
+    window.addEventListener("releaseguard:unauthorized", redirectToLogin);
+    return () => window.removeEventListener("releaseguard:unauthorized", redirectToLogin);
+  }, [router]);
+
+  useEffect(() => {
+    let active = true;
+    const restoreSession = async () => {
       try {
-        setCurrentUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error("Failed to restore saved user:", error);
+        const response = await apiFetch(`${API_BASE}/api/auth/me`);
+        if (!response.ok) {
+          return;
+        }
+        const user = await response.json();
+        if (!active) return;
+        setCurrentUser(user);
+        await fetchAllData();
+      } catch {
+        router.replace(LOGIN_URL);
       }
-    }
-    fetchAllData();
-  }, []);
+    };
+    void restoreSession();
+    return () => { active = false; };
+  }, [router]);
 
   const handleSelectPr = async (prId: string) => {
     setSelectedPrId(prId);
     try {
-      const res = await fetch(`${API_BASE}/api/prs/${prId}`);
+      const res = await apiFetch(`${API_BASE}/api/prs/${prId}`);
       if (res.ok) {
         const data = await res.json();
         setSelectedPrDetail(data);
@@ -97,32 +112,12 @@ export default function Home() {
     }
   };
 
-  const handleLogin = (user: UserProfile) => {
-    setCurrentUser(user);
-    localStorage.setItem("releaseguard-user", JSON.stringify(user));
-    setIsAuthModalOpen(false);
-    setActiveTab("prs");
-  };
-
-  const handleSwitchUser = (user: UserProfile) => {
-    setCurrentUser(user);
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem("releaseguard-user");
-    setIsAuthModalOpen(true);
-    setActiveTab("auth");
-  };
-
-  const handleResetDb = async () => {
-    if (confirm("Reset ReleaseGuard live state to a clean baseline?")) {
-      try {
-        await fetch(`${API_BASE}/api/demo/reset-db`, { method: "POST" });
-        await fetchAllData();
-      } catch (err) {
-        console.error("Reset failed:", err);
-      }
+  const handleLogout = async () => {
+    try {
+      await apiFetch(`${API_BASE}/api/auth/logout`, { method: "POST" });
+    } finally {
+      setCurrentUser(null);
+      router.replace(LOGIN_URL);
     }
   };
 
@@ -133,8 +128,8 @@ export default function Home() {
 
     try {
       const [healthRes, timelineRes] = await Promise.all([
-        fetch(`${API_BASE}/api/deployments/release-health/${repoId}`),
-        fetch(`${API_BASE}/api/deployments/release-timeline/${repoId}`),
+        apiFetch(`${API_BASE}/api/deployments/release-health/${repoId}`),
+        apiFetch(`${API_BASE}/api/deployments/release-timeline/${repoId}`),
       ]);
 
       if (healthRes.ok) setReleaseHealth(await healthRes.json());
@@ -153,7 +148,7 @@ export default function Home() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/repos/${repoId}`, { method: "DELETE" });
+      const res = await apiFetch(`${API_BASE}/api/repos/${repoId}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data?.detail || "Failed to delete repository");
@@ -168,7 +163,7 @@ export default function Home() {
   const handleTriggerIncident = async (type: string, title: string) => {
     try {
       const defaultRepo = repos[0]?.id || "repo_core_banking";
-      await fetch(`${API_BASE}/api/deployments/incidents/simulate`, {
+      await apiFetch(`${API_BASE}/api/deployments/incidents/simulate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -186,7 +181,7 @@ export default function Home() {
 
   const handleResolveIncident = async (incidentId: string) => {
     try {
-      await fetch(`${API_BASE}/api/deployments/incidents/${incidentId}/resolve`, {
+      await apiFetch(`${API_BASE}/api/deployments/incidents/${incidentId}/resolve`, {
         method: "POST"
       });
       await fetchAllData();
@@ -208,7 +203,7 @@ export default function Home() {
     { id: "prs", label: "Pull requests", count: prs.length, accent: "cyan", icon: GitPullRequest },
     { id: "repos", label: "Repositories", count: repos.length, accent: "blue", icon: FolderGit2 },
     { id: "policies", label: "Policies", count: 1, accent: "violet", icon: Shield },
-    { id: "workflow", label: "Workflow", count: 12, accent: "violet", icon: LayoutDashboard },
+    { id: "workflow", label: "Operations", count: deployments.length + incidents.filter((i) => i.status !== "RESOLVED").length, accent: "violet", icon: LayoutDashboard },
     { id: "incidents", label: "Incidents", count: incidents.length, accent: "amber", icon: Activity },
     { id: "agent", label: "Project agent", count: 1, accent: "emerald", icon: Bot },
     { id: "auth", label: "Access", count: currentUser ? 1 : 0, accent: "rose", icon: KeyRound },
@@ -344,7 +339,7 @@ export default function Home() {
             </div>
           )}
 
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <div className="rounded-xl border border-white/10 bg-[#0d1422] p-3.5 shadow-lg shadow-black/20">
               <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Open PRs</p>
               <div className="mt-2 flex items-end justify-between">
@@ -366,9 +361,21 @@ export default function Home() {
                 <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-300">Connected</span>
               </div>
             </div>
+            <div className="rounded-xl border border-white/10 bg-[#0d1422] p-3.5 shadow-lg shadow-black/20">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Deployments</p>
+              <div className="mt-2 flex items-end justify-between">
+                <span className="text-2xl font-bold text-white">{deployments.length}</span>
+                <span className="rounded-full bg-blue-500/10 px-2 py-1 text-[10px] font-semibold text-blue-300">Tracked</span>
+              </div>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-[#0d1422] p-3.5 shadow-lg shadow-black/20">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Active incidents</p>
+              <div className="mt-2 flex items-end justify-between">
+                <span className="text-2xl font-bold text-white">{incidents.filter((i) => i.status !== "RESOLVED").length}</span>
+                <span className="rounded-full bg-amber-500/10 px-2 py-1 text-[10px] font-semibold text-amber-300">Monitoring</span>
+              </div>
+            </div>
           </div>
-
-          <WorkflowArchitectureBanner />
 
           {selectedRepoId && releaseHealth && (
             <div className="rounded-2xl border border-white/10 bg-[#0d1422] p-4 shadow-lg shadow-black/20">
@@ -426,7 +433,7 @@ export default function Home() {
                     <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Release timeline</p>
                     <button
                       onClick={async () => {
-                        const res = await fetch(`${API_BASE}/api/deployments/release-rollback/${selectedRepoId}`, { method: "POST" });
+                        const res = await apiFetch(`${API_BASE}/api/deployments/release-rollback/${selectedRepoId}`, { method: "POST" });
                         if (res.ok) {
                           const data = await res.json();
                           alert(data.status === "ROLLBACK_COMPLETED" ? "Rollback executed." : "Rollback not triggered.");
@@ -458,23 +465,35 @@ export default function Home() {
 
         {/* Tab 1: Pull Requests Dashboard (Step 9) */}
         {activeTab === "prs" && (
-          <PRList
-            prs={prs}
-            onSelectPr={handleSelectPr}
-            selectedPrId={selectedPrId}
-            selectedRepoFilter={selectedRepoName || null}
-            onClearRepoFilter={() => setSelectedRepoName("")}
-          />
+          <div className="space-y-3">
+            <WorkflowArchitectureBanner
+              onNavigateTab={setActiveTab}
+              onOpenSandbox={() => setShowSandbox(true)}
+            />
+            <PRList
+              prs={prs}
+              onSelectPr={handleSelectPr}
+              selectedPrId={selectedPrId}
+              selectedRepoFilter={selectedRepoName || null}
+              onClearRepoFilter={() => setSelectedRepoName("")}
+            />
+          </div>
         )}
 
         {/* Tab 2: Repositories List (Step 9) */}
         {activeTab === "repos" && (
-          <RepoList
-            repos={repos}
-            onSelectRepo={(repoId, repoFullName) => handleSelectRepo(repoId, repoFullName)}
-            onDeleteRepo={handleDeleteRepo}
-            onRefreshRepos={fetchAllData}
-          />
+          <div className="space-y-3">
+            <WorkflowArchitectureBanner
+              onNavigateTab={setActiveTab}
+              onOpenSandbox={() => setShowSandbox(true)}
+            />
+            <RepoList
+              repos={repos}
+              onSelectRepo={(repoId, repoFullName) => handleSelectRepo(repoId, repoFullName)}
+              onDeleteRepo={handleDeleteRepo}
+              onRefreshRepos={fetchAllData}
+            />
+          </div>
         )}
 
         {activeTab === "policies" && (
@@ -486,48 +505,55 @@ export default function Home() {
           />
         )}
 
-        {/* Tab 3: Dedicated Workflow Engine View */}
+        {/* Operations activity */}
         {activeTab === "workflow" && (
-          <div className="space-y-6">
-            <div className="glass-card p-6 rounded-2xl bg-[#0d121d]/90 border border-white/10 space-y-5">
-              <h3 className="text-xl font-bold text-white">
-                Release workflow and review checks
-              </h3>
-              <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
-                This workflow watches connected repos, checks PR changes, scores risk, and blocks releases when the repo fails the team’s guardrails.
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
-                <div className="p-5 rounded-xl bg-[#121826] border border-white/5 space-y-3">
-                  <h4 className="text-sm font-bold text-cyan-400 uppercase tracking-wider">
-                    Review checks
-                  </h4>
-                  <ul className="text-sm text-slate-300 space-y-2">
-                    <li>• <strong>Secrets:</strong> exposed credentials, tokens, and private keys</li>
-                    <li>• <strong>Config:</strong> weak env values, permissive access, and missing timeouts</li>
-                    <li>• <strong>Infra:</strong> open ingress, root containers, and insecure defaults</li>
-                    <li>• <strong>CI/CD:</strong> unverified scripts and risky automation paths</li>
-                    <li>• <strong>Tests:</strong> skipped coverage and brittle release validation</li>
-                    <li>• <strong>Cost:</strong> oversized resources and avoidable cloud spend</li>
-                    <li>• <strong>DB:</strong> risky migration patterns and destructive schema changes</li>
-                  </ul>
-                </div>
-
-                <div className="p-5 rounded-xl bg-[#121826] border border-white/5 space-y-3">
-                  <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider">
-                    Bob AI review flow
-                  </h4>
-                  <ul className="text-sm text-slate-300 space-y-2">
-                    <li>• <strong>Orchestrator:</strong> decides GO, HOLD, or rollback based on repo health</li>
-                    <li>• <strong>Security:</strong> checks auth, secrets, and risky config changes</li>
-                    <li>• <strong>Infra:</strong> reviews runtime and deploy safety</li>
-                    <li>• <strong>Rollback:</strong> prepares a safe fallback plan</li>
-                    <li>• <strong>Cost:</strong> flags expensive or noisy infrastructure changes</li>
-                    <li>• <strong>DB:</strong> assesses migration safety and downtime risk</li>
-                    <li>• <strong>Incident:</strong> correlates deploy issues to the relevant PR</li>
-                  </ul>
-                </div>
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-300">Operations</p>
+                <h3 className="mt-1 text-xl font-semibold text-white">Deployment and incident activity</h3>
               </div>
+              <span className="text-xs text-slate-400">{deployments.length} deployments · {incidents.filter((i) => i.status !== "RESOLVED").length} active incidents</span>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              <section className="min-w-0">
+                <h4 className="border-b border-white/10 pb-2 text-sm font-semibold text-slate-200">Recent deployments</h4>
+                {deployments.length === 0 ? (
+                  <p className="py-5 text-sm text-slate-500">No deployments recorded yet.</p>
+                ) : (
+                  <ul className="divide-y divide-white/5">
+                    {deployments.slice(0, 6).map((deployment) => (
+                      <li key={deployment.id} className="flex items-center justify-between gap-3 py-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-white">{deployment.repo_name || "Repository"}</p>
+                          <p className="mt-1 truncate text-xs text-slate-400">{deployment.environment} · {deployment.version}</p>
+                        </div>
+                        <span className="shrink-0 text-right text-xs text-slate-400">{deployment.status}<br />{deployment.deployed_at}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+
+              <section className="min-w-0">
+                <h4 className="border-b border-white/10 pb-2 text-sm font-semibold text-slate-200">Incidents requiring attention</h4>
+                {incidents.filter((incident) => incident.status !== "RESOLVED").length === 0 ? (
+                  <p className="py-5 text-sm text-slate-500">No active incidents.</p>
+                ) : (
+                  <ul className="divide-y divide-white/5">
+                    {incidents.filter((incident) => incident.status !== "RESOLVED").slice(0, 6).map((incident) => (
+                      <li key={incident.id} className="flex items-center justify-between gap-3 py-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-white">{incident.title}</p>
+                          <p className="mt-1 truncate text-xs text-slate-400">{incident.repo_name || "Workspace"} · {incident.created_at}</p>
+                        </div>
+                        <span className="shrink-0 rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-1 text-[10px] font-semibold uppercase text-amber-200">{incident.severity}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
             </div>
           </div>
         )}
@@ -557,8 +583,7 @@ export default function Home() {
         {activeTab === "auth" && (
           <TeamAuthTab
             currentUser={currentUser}
-            onOpenLoginModal={() => setIsAuthModalOpen(true)}
-            onSwitchUser={handleSwitchUser}
+            onOpenLogin={() => window.location.assign(LOGIN_URL)}
             onLogout={handleLogout}
           />
         )}
@@ -590,15 +615,6 @@ export default function Home() {
           defaultRepoName={selectedRepoName || repos[0]?.full_name || repos[0]?.name || "Select connected repo"}
         />
       )}
-
-      {/* Professional Authentication Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        currentUser={currentUser}
-        onLogin={handleLogin}
-        onLogout={handleLogout}
-      />
 
       {/* Global Command Palette */}
       <CommandPalette

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from ..database import get_db
+from ..database import get_current_user_id, get_db
 from ..github_review_service import (
     build_review_summary,
     create_status_check,
@@ -41,8 +41,13 @@ def authorize_github_repo(payload: dict):
     repo_id = f"repo_{normalized.replace('/', '_')}"
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id FROM repositories WHERE id = ?", (repo_id,))
-    if cursor.fetchone() is None:
+    user_id = get_current_user_id()
+    cursor.execute("SELECT * FROM repositories WHERE id = ?", (repo_id,))
+    existing = cursor.fetchone()
+    if existing is not None and user_id and existing["owner_id"] not in (None, user_id):
+        conn.close()
+        raise HTTPException(status_code=404, detail="Repository not found")
+    if existing is None:
         cursor.execute(
             """
             INSERT INTO repositories (id, name, full_name, description, default_branch, webhook_active, created_at, updated_at)
@@ -56,6 +61,9 @@ def authorize_github_repo(payload: dict):
                 metadata.get("default_branch") or "main",
             ),
         )
+        conn.commit()
+    if user_id:
+        cursor.execute("UPDATE repositories SET owner_id = ? WHERE id = ? AND owner_id IS NULL", (user_id, repo_id))
         conn.commit()
     conn.close()
 
@@ -92,6 +100,9 @@ def scan_github_pr(payload: dict):
 
     try:
         normalized_repo = normalize_repository_name(repo_name)
+        user_id = get_current_user_id()
+        if user_id and not _user_owns_github_repo(user_id, normalized_repo):
+            raise HTTPException(status_code=404, detail="Repository not found")
         metadata = fetch_github_open_prs(token, normalized_repo, 5)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -142,6 +153,9 @@ def review_pr_manually(payload: dict):
         raise HTTPException(status_code=400, detail="GitHub PAT, repo name, and PR number are required")
 
     normalized_repo = normalize_repository_name(repo_name)
+    user_id = get_current_user_id()
+    if user_id and not _user_owns_github_repo(user_id, normalized_repo):
+        raise HTTPException(status_code=404, detail="Repository not found")
     prs = fetch_github_open_prs(token, normalized_repo, 10)
     pr_details = next((pr for pr in prs if int((pr or {}).get("number") or 0) == pr_number), None)
 
@@ -163,3 +177,14 @@ def review_pr_manually(payload: dict):
         "risk_level": result["risk_level"],
         "summary": result["summary"],
     }
+
+
+def _user_owns_github_repo(user_id: str, repo_name: str) -> bool:
+    repo_id = f"repo_{repo_name.replace('/', '_')}"
+    conn = get_db()
+    row = conn.execute(
+        "SELECT 1 FROM repositories WHERE id = ? AND owner_id = ?",
+        (repo_id, user_id),
+    ).fetchone()
+    conn.close()
+    return row is not None

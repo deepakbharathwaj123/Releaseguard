@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi import HTTPException
 from ..seed_data import (
     SAMPLE_DIFF_CRITICAL,
     SAMPLE_DIFF_HIGH,
@@ -53,6 +54,8 @@ def get_demo_scenarios():
 @router.post("/reset-db")
 def reset_database():
     import os
+    if os.getenv("ENABLE_DEMO_RESET", "").lower() != "true":
+        raise HTTPException(status_code=403, detail="Destructive demo reset is disabled")
     from ..database import DB_FILE
     if os.path.exists(DB_FILE):
         try:

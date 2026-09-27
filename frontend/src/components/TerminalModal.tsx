@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
 import React, { useState, useEffect } from "react";
 import { Terminal, X, CheckCircle2, RotateCcw, Copy, Check, Play } from "lucide-react";
 
@@ -28,7 +29,7 @@ export const TerminalModal: React.FC<TerminalModalProps> = ({
     setLogs([]);
 
     const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
-    fetch(`${apiBase}/api/prs/${prId}/execute-rollback`, {
+    apiFetch(`${apiBase}/api/prs/${prId}/execute-rollback`, {
       method: "POST"
     })
       .then((res) => res.json())

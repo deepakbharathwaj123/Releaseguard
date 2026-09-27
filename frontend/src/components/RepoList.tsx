@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
 import React, { useEffect, useState } from "react";
 import {
   FolderGit2,
@@ -67,7 +68,7 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo, onDelet
   useEffect(() => {
     const fetchPresets = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/repos/policy-presets`);
+        const res = await apiFetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/repos/policy-presets`);
         if (!res.ok) return;
         const data = await res.json();
         setPresets(data || []);
@@ -104,7 +105,7 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo, onDelet
     try {
       setIsAuthorizing(true);
       setAuthStatus("Authorizing GitHub repository with ReleaseGuard...");
-      const authRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/github/authorize`, {
+      const authRes = await apiFetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/github/authorize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: tokenInput, repo_name: repoInput.trim() }),
@@ -118,7 +119,7 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo, onDelet
       const prNumber = Number(prNumberInput || 0);
       if (prNumber > 0) {
         setAuthStatus(`Repository authorized. Running ReleaseGuard on ${repoInput.trim()}#${prNumber}...`);
-        const scanRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/github/scan`, {
+        const scanRes = await apiFetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/github/scan`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token: tokenInput, repo_name: repoInput.trim(), pr_number: prNumber }),
@@ -148,7 +149,7 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo, onDelet
 
     try {
       setIsPreparingGitLogin(true);
-      const loginRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/github/login`, {
+      const loginRes = await apiFetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/github/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -178,7 +179,7 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo, onDelet
     try {
       setIsCreatingPreset(true);
       setPresetStatus("");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/repos/policy-presets`, {
+      const res = await apiFetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/repos/policy-presets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -197,7 +198,7 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo, onDelet
 
       setSelectedPresetName(data.name);
       setPresetStatus(`Preset “${data.name}” saved.`);
-      const updated = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/repos/policy-presets`);
+      const updated = await apiFetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/repos/policy-presets`);
       if (updated.ok) {
         const list = await updated.json();
         setPresets(list || []);
@@ -217,7 +218,7 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo, onDelet
 
     try {
       setIsApplyingPreset(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/repos/${repoForPreset}/apply-policy-preset`, {
+      const res = await apiFetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/repos/${repoForPreset}/apply-policy-preset`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ preset_name: selectedPresetName }),
@@ -251,7 +252,7 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo, onDelet
     try {
       setIsBulkImporting(true);
       setBulkImportStatus("");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/repos/bulk-import`, {
+      const res = await apiFetch(`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001"}/api/repos/bulk-import`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: tokenInput, repos: reposToImport }),

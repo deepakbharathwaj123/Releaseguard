@@ -16,7 +16,7 @@ import {
   ShieldCheck,
   Bot
 } from "lucide-react";
-import { UserProfile, DEMO_USERS } from "@/types/auth";
+import { UserProfile } from "@/types/auth";
 
 interface HeaderProps {
   onOpenSandbox: () => void;
@@ -25,7 +25,6 @@ interface HeaderProps {
   onOpenCommandPalette: () => void;
   onOpenAuthModal: () => void;
   currentUser: UserProfile | null;
-  onSwitchUser: (user: UserProfile) => void;
   onLogout: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -42,7 +41,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCommandPalette,
   onOpenAuthModal,
   currentUser,
-  onSwitchUser,
   onLogout,
   activeTab,
   setActiveTab,
@@ -205,11 +203,9 @@ export const Header: React.FC<HeaderProps> = ({
                   className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-xl bg-[#101728] hover:bg-[#172138] border border-white/15 transition-all text-left group"
                 >
                   <div className="relative">
-                    <img
-                      src={currentUser.avatar}
-                      alt={currentUser.name}
-                      className="w-8 h-8 rounded-lg object-cover border border-cyan-400/60"
-                    />
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-400/60 bg-cyan-400/10 text-sm font-bold text-cyan-200">
+                      {currentUser.name.slice(0, 1).toUpperCase()}
+                    </span>
                     <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-[#070b14]" />
                   </div>
                   <div className="hidden sm:block">
@@ -232,11 +228,9 @@ export const Header: React.FC<HeaderProps> = ({
                     />
                     <div className="absolute right-0 mt-2 w-80 bg-[#0c1220] border border-cyan-500/30 rounded-2xl shadow-2xl z-50 p-4 space-y-4 animate-in fade-in zoom-in-95">
                       <div className="flex items-center gap-3 p-3 bg-[#12192e] rounded-xl border border-white/5">
-                        <img
-                          src={currentUser.avatar}
-                          alt={currentUser.name}
-                          className="w-11 h-11 rounded-xl object-cover border border-cyan-400/50"
-                        />
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-cyan-400/50 bg-cyan-400/10 font-bold text-cyan-200">
+                          {currentUser.name.slice(0, 1).toUpperCase()}
+                        </div>
                         <div className="space-y-1 min-w-0">
                           <p className="text-sm font-bold text-white truncate">{currentUser.name}</p>
                           <p className="text-xs text-slate-400 truncate">{currentUser.email}</p>
@@ -244,31 +238,6 @@ export const Header: React.FC<HeaderProps> = ({
                             {currentUser.clearanceLevel.replace("_", " ")}
                           </span>
                         </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <span className="text-xs text-slate-400 uppercase font-bold tracking-wider px-1">
-                          Switch Role Persona
-                        </span>
-                        {DEMO_USERS.map((u) => (
-                          <button
-                            key={u.id}
-                            onClick={() => {
-                              onSwitchUser(u);
-                              setShowProfileDropdown(false);
-                            }}
-                            className={`w-full p-2.5 rounded-xl text-left text-sm transition-all flex items-center justify-between ${
-                              u.id === currentUser.id
-                                ? "bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30"
-                                : "text-slate-300 hover:bg-white/5"
-                            }`}
-                          >
-                            <span className="truncate">{u.roleTitle.split("&")[0].trim()}</span>
-                            {u.id === currentUser.id && (
-                              <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                            )}
-                          </button>
-                        ))}
                       </div>
 
                       <div className="pt-2 border-t border-white/10 flex items-center justify-between text-sm px-1">

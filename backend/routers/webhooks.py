@@ -2,7 +2,7 @@ import json
 import uuid
 from datetime import datetime
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
-from ..database import get_db
+from ..database import get_current_user_id, get_db
 from ..github_review_service import trigger_review_for_repo
 from ..scanners import run_all_scanners
 from ..risk_engine import compute_risk_score
@@ -41,14 +41,21 @@ def process_pr_pipeline(repo_data: dict, pr_data: dict, diff_text: str):
     repo_id = f"repo_{repo_data.get('name', 'custom')}"
     repo_name = repo_data.get("name", "custom-repo")
     repo_full_name = repo_data.get("full_name", f"org/{repo_name}")
+    user_id = get_current_user_id()
 
     # Ensure repo exists
-    cursor.execute("SELECT id FROM repositories WHERE id = ?", (repo_id,))
-    if not cursor.fetchone():
+    cursor.execute("SELECT * FROM repositories WHERE id = ?", (repo_id,))
+    existing_repo = cursor.fetchone()
+    if existing_repo and user_id and existing_repo["owner_id"] not in (None, user_id):
+        conn.close()
+        raise HTTPException(status_code=404, detail="Repository not found")
+    if not existing_repo:
         cursor.execute("""
             INSERT INTO repositories (id, name, full_name, description, default_branch, webhook_active, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, 1, ?, ?)
         """, (repo_id, repo_name, repo_full_name, repo_data.get("description", "Imported GitHub Repository"), "main", now, now))
+    if user_id:
+        cursor.execute("UPDATE repositories SET owner_id = ? WHERE id = ? AND owner_id IS NULL", (user_id, repo_id))
 
     pr_number = pr_data.get("number", int(uuid.uuid4().int % 900 + 100))
     pr_id = f"pr_{repo_id}_{pr_number}"
