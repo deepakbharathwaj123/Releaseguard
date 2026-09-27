@@ -6,7 +6,7 @@ services:
     startCommand: "python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: FRONTEND_ORIGINS
-        value: https://frontend-five-omega-31.vercel.app
+        value: https://releaseguard-ai.pages.dev,https://67e2cfb6.releaseguard-ai.pages.dev
       - key: SESSION_COOKIE_SECURE
         value: "true"
       - key: PYTHON_VERSION
