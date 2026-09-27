@@ -34,9 +34,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onLogout,
 }) => {
   const [activeTab, setActiveTab] = useState<"roles" | "sso" | "credentials">("roles");
-  const [emailInput, setEmailInput] = useState("sarah.chen@releaseguard.enterprise");
-  const [passwordInput, setPasswordInput] = useState("••••••••••••");
-  const [mfaCode, setMfaCode] = useState("492810");
+  const [emailInput, setEmailInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [mfaCode, setMfaCode] = useState("");
   const [githubUsername, setGithubUsername] = useState("deepakbharathwaj123");
   const [githubEmail, setGithubEmail] = useState("deepakbala2007@gmail.com");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -132,14 +132,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-extrabold text-white tracking-tight">
-                  ReleaseGuard Enterprise Auth
+                  ReleaseGuard Access
                 </h3>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                  SOC2 Certified
+                  Active access
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Identity & Access Management • Multi-Agent Release Governance
+                Identity and repo access for release review and approval flow
               </p>
             </div>
           </div>
@@ -205,7 +205,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {activeTab === "roles" && (
             <div className="space-y-3">
               <p className="text-xs text-slate-300">
-                Select an enterprise role persona to immediately test role-based permissions, governance overrides, and telemetry actions:
+                Select a team access role to validate permissions, governance checks, and release approval actions for the active workspace:
               </p>
 
               <div className="grid grid-cols-1 gap-2.5">

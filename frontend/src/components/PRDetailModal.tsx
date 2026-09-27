@@ -93,8 +93,8 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
   // Chat with Bob Swarm state
   const [chatMessages, setChatMessages] = useState<Array<{ sender: string; text: string; time: string }>>([
     {
-      sender: "IBM Bob Orchestrator",
-      text: "Hello! I am coordinating the ReleaseGuard AI agent swarm for this pull request. Ask me about our GO/NO-GO verdict, security findings, or rollback runbook.",
+      sender: "Bob AI",
+      text: "I’m checking the PR against the repo rules and release guardrails. Ask about the verdict, findings, or rollback plan.",
       time: "Just now"
     }
   ]);
@@ -133,15 +133,15 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
       const data = await res.json();
       setChatMessages((prev) => [
         ...prev,
-        { sender: data.author || "IBM Bob Swarm", text: data.reply, time: "Just now" }
+        { sender: data.author || "Bob AI", text: data.reply, time: "Just now" }
       ]);
     } catch (err) {
       console.error("Chat error:", err);
       setChatMessages((prev) => [
         ...prev,
         {
-          sender: "IBM Bob Swarm",
-          text: "Agent communication temporarily interrupted. Swarm is still enforcing release gate.",
+          sender: "Bob AI",
+          text: "Review connection is interrupted, but the repo gate is still enforcing checks.",
           time: "Just now"
         }
       ]);
@@ -185,6 +185,37 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
     if (selectedScannerFilter === "ALL") return true;
     return f.scanner_type.toLowerCase() === selectedScannerFilter.toLowerCase();
   });
+
+  const getFindingImpact = (finding: Finding) => {
+    const title = finding.title.toLowerCase();
+    if (title.includes("secret") || title.includes("token") || title.includes("key")) {
+      return "Potential credential exposure can allow unauthorized access, release tampering, or compromised cloud resources.";
+    }
+    if (title.includes("privileged") || title.includes("open") || title.includes("public") || title.includes("insecure")) {
+      return "This weakens the operating boundary and increases blast radius if the workload is compromised.";
+    }
+    if (title.includes("migration") || title.includes("drop") || title.includes("schema")) {
+      return "This can cause irreversible data loss, outage windows, or failed production rollback paths.";
+    }
+    if (title.includes("timeout") || title.includes("script") || title.includes("ci")) {
+      return "This can cause unbounded execution, unsafe automation, or upstream process drift in CI/CD.";
+    }
+    return "This issue can degrade release safety, increase runtime risk, and complicate recovery during deployment.";
+  };
+
+  const getRemediationSteps = (finding: Finding) => {
+    const base = finding.remediation || "Review and correct the risky change before merging.";
+    const steps = base
+      .split(/[.;]\s+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    if (steps.length === 0) {
+      return [base];
+    }
+
+    return steps.slice(0, 3);
+  };
 
   return (
     <>
@@ -259,8 +290,8 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
           <div className="flex items-center space-x-1 px-5 border-b border-[rgba(255,255,255,0.06)] bg-[#090d16] overflow-x-auto">
             {[
               { id: "findings", label: `Findings (${pr.findings.length})`, icon: ShieldAlert },
-              { id: "agents", label: `IBM Bob Swarm (${pr.agent_outputs.length})`, icon: Bot },
-              { id: "chat", label: "Ask IBM Bob Swarm", icon: Zap },
+              { id: "agents", label: `Bob AI review (${pr.agent_outputs.length})`, icon: Bot },
+              { id: "chat", label: "Ask Bob AI", icon: Zap },
               { id: "rollback", label: "Rollback Runbook", icon: RotateCcw },
               { id: "cost", label: "Cost & FinOps", icon: DollarSign },
               { id: "comment", label: "GitHub PR Comment", icon: MessageSquare },
@@ -308,16 +339,30 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                 </div>
 
                 {filteredFindings.length === 0 ? (
-                  <div className="p-8 text-center rounded-xl bg-[#121826]/50 border border-[rgba(255,255,255,0.06)]">
-                    <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-white">No findings in this category!</p>
-                    <p className="text-xs text-slate-400 mt-0.5">Code passed all checks for {selectedScannerFilter.toLowerCase()} scanner.</p>
+                  <div className="p-6 rounded-xl bg-[#121826]/60 border border-emerald-500/20">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-7 h-7 text-emerald-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-bold text-white">No issues detected in this category.</p>
+                        <p className="mt-1 text-xs text-slate-300">
+                          The {selectedScannerFilter.toLowerCase() === "all" ? "active" : selectedScannerFilter.toLowerCase()} checks passed for this PR, so the release gate is not blocked by this scanner.
+                        </p>
+                        <div className="mt-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
+                          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-300">Recommended follow-up</p>
+                          <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-emerald-100">
+                            <li>Keep the repo in the current review state while the release checks remain green.</li>
+                            <li>Confirm the related team policy check still matches the production baseline.</li>
+                            <li>Re-run the repo validation before final merge or deployment.</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   filteredFindings.map((f) => (
                     <div
                       key={f.id}
-                      className="p-4 rounded-xl bg-[#101625] border border-[rgba(255,255,255,0.08)] space-y-2.5"
+                      className="p-4 rounded-xl bg-[#101625] border border-[rgba(255,255,255,0.08)] space-y-3"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
@@ -346,21 +391,28 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                         </span>
                       </div>
 
-                      <p className="text-xs text-slate-300">{f.description}</p>
+                      <div className="grid gap-3 md:grid-cols-3">
+                        <div className="rounded-lg border border-white/5 bg-[#090d16] p-2.5">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Issue</p>
+                          <p className="mt-1 text-xs text-slate-200">{f.description}</p>
+                        </div>
+                        <div className="rounded-lg border border-white/5 bg-[#090d16] p-2.5">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Impact</p>
+                          <p className="mt-1 text-xs text-slate-200">{getFindingImpact(f)}</p>
+                        </div>
+                        <div className="rounded-lg border border-white/5 bg-[#090d16] p-2.5">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Fix steps</p>
+                          <ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-emerald-200">
+                            {getRemediationSteps(f).map((step, idx) => (
+                              <li key={`${f.id}-step-${idx}`}>{step}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
 
                       {f.snippet && (
                         <div className="p-2.5 rounded-lg bg-[#070a12] border border-[rgba(255,255,255,0.06)] font-mono text-xs text-red-300 overflow-x-auto">
                           <code>{f.snippet}</code>
-                        </div>
-                      )}
-
-                      {f.remediation && (
-                        <div className="p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-800/30 flex items-start space-x-2">
-                          <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                          <div className="text-xs text-emerald-200">
-                            <span className="font-bold">Remediation: </span>
-                            <span>{f.remediation}</span>
-                          </div>
                         </div>
                       )}
                     </div>
@@ -376,8 +428,8 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                   <div className="flex items-center space-x-2.5">
                     <Bot className="w-5 h-5 text-blue-400" />
                     <div>
-                      <span className="text-xs font-bold text-white block">IBM Bob Swarm Consensus Engine</span>
-                      <span className="text-xs text-slate-400">Granite 3-8B Instruct / watsonx multi-agent orchestration</span>
+                      <span className="text-xs font-bold text-white block">Bob AI review engine</span>
+                      <span className="text-xs text-slate-400">Release verdict and review notes from the repo checks</span>
                     </div>
                   </div>
                   <span className="text-xs font-bold px-2 py-1 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
@@ -472,7 +524,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                   <div className="flex items-center space-x-2">
                     <Zap className="w-5 h-5 text-cyan-400" />
                     <div>
-                      <h4 className="text-sm font-bold text-white">Ask IBM Bob Agent Swarm</h4>
+                      <h4 className="text-sm font-bold text-white">Ask Bob AI</h4>
                       <p className="text-xs text-slate-400">Direct interactive consultation with the Release Orchestrator & subagents</p>
                     </div>
                   </div>
@@ -527,7 +579,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                   {isChatThinking && (
                     <div className="p-3 rounded-xl bg-[#101726] text-xs text-cyan-400 animate-pulse flex items-center space-x-2">
                       <Bot className="w-4 h-4 animate-spin" />
-                      <span>IBM Bob Swarm deliberating...</span>
+                      <span>Bob AI is reviewing the release checks...</span>
                     </div>
                   )}
                 </div>
@@ -764,7 +816,7 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
           {/* Modal Footer */}
           <div className="p-4 border-t border-[rgba(255,255,255,0.08)] bg-[#0d121d] flex items-center justify-between">
             <span className="text-xs text-slate-400">
-              Evaluated with 7 automated scanners and IBM Bob Multi-Agent Swarm.
+              Evaluated with repo checks and Bob AI review.
             </span>
             <button
               onClick={onClose}

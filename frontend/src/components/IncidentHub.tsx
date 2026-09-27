@@ -149,11 +149,11 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
           <div className="flex items-center gap-2">
             <Flame className="w-5 h-5 text-red-400 animate-pulse" />
             <h3 className="text-base font-bold text-white">
-              Deployment Telemetry & Incident Analysis Agent Hub (Steps 10–12)
+              Deployment telemetry and incident review (Steps 10–12)
             </h3>
           </div>
           <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-            When production anomalies occur, IBM Bob Incident Analysis Agent analyzes metrics, identifies the originating PR commit, and generates automated killswitch scripts.
+            When production anomalies occur, the system traces the related PR, checks the deployment signal, and prepares a remediation path.
           </p>
         </div>
 

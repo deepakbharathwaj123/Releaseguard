@@ -29,11 +29,11 @@ def generate_github_pr_comment(
         status_desc = f"ReleaseGuard: {level} Risk ({score}/100) - Critical guardrail violations found"
 
     lines = [
-        f"## {badge_emoji} ReleaseGuard AI — Release Decision: **{badge_title}**",
+        f"## {badge_emoji} Release Decision: **{badge_title}**",
         "",
-        f"> **Risk Score:** `{score}/100` (`{level}`) | **Scanned Guardrails:** 7 Scanners Active | **IBM Bob Consensus:** {verdict}",
+        f"> **Risk Score:** `{score}/100` (`{level}`) | **Scanned Guardrails:** 7 active checks | **Verdict:** {verdict}",
         "",
-        "### 🛡️ Scanner Findings Summary",
+        "### Scanner Findings Summary",
         "",
         "| Scanner Category | Severity | Title | File & Line |",
         "| :--- | :--- | :--- | :--- |"
@@ -50,7 +50,7 @@ def generate_github_pr_comment(
 
     lines.extend([
         "",
-        "### 🤖 IBM Bob Multi-Agent Deliberation",
+        "### Review Outcome",
         ""
     ])
 
@@ -80,7 +80,7 @@ def generate_github_pr_comment(
 
     lines.extend([
         "---",
-        "*Powered by ReleaseGuard AI & IBM watsonx / IBM Bob Multi-Agent Swarm.*"
+        "*Repository review based on the current diff and scanner output for this PR.*"
     ])
 
     comment_markdown = "\n".join(lines)

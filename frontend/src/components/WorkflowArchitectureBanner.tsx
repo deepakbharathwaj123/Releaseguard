@@ -90,19 +90,19 @@ const STEPS: WorkflowStep[] = [
   },
   {
     step: 6,
-    label: "IBM Bob Agent Swarm",
+    label: "Bob AI review",
     category: "Agents",
     icon: Bot,
-    desc: "Orchestrates multi-agent deliberation using IBM watsonx / IBM Bob Swarm:",
+    desc: "Runs the review flow across risk, safety, and rollback checks:",
     subitems: [
-      "• Release Orchestrator Agent (Verdict: GO/NO-GO)",
-      "• Security Subagent (SOC2/PCI compliance)",
-      "• Infra/DevOps Subagent (K8s pod safety)",
-      "• Rollback Planner Subagent (Zero-RTO runbook)",
-      "• Cost Subagent (FinOps delta)",
-      "• DB Migration Subagent (Table locks)"
+      "• Orchestrator (Verdict: GO/NO-GO)",
+      "• Security review (auth and config checks)",
+      "• Infra review (runtime and deploy safety)",
+      "• Rollback planning (fallback runbook)",
+      "• Cost review (resource impact)",
+      "• DB review (migration safety)"
     ],
-    interactiveAction: { label: "Inspect Bob Consensus on PRs", tabTarget: "prs", actionType: "tab" }
+    interactiveAction: { label: "Inspect Bob AI review", tabTarget: "prs", actionType: "tab" }
   },
   {
     step: 7,
@@ -218,14 +218,14 @@ export const WorkflowArchitectureBanner: React.FC<WorkflowArchitectureBannerProp
           <div className="flex items-center gap-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
             <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-              <span>End-to-End ReleaseGuard & IBM Bob Architecture Pipeline</span>
+              <span>ReleaseGuard review pipeline</span>
               <span className="text-xs font-bold tracking-wide px-2.5 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                12 Stages Live
+                12 stages live
               </span>
             </h2>
           </div>
           <p className="text-sm text-slate-300 mt-1">
-            Visual execution path: Developer PR → 7 Code Scanners → Composite Risk Engine → IBM Bob Swarm → SRE Incident Diagnosis
+            Visual path: developer PR → repo checks → risk review → Bob AI verdict → incident follow-up
           </p>
         </div>
 

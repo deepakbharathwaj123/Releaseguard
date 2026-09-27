@@ -7,6 +7,7 @@ import requests
 
 from .database import get_db
 from .github_service import get_github_diff_text, get_github_json
+from .alerting import send_review_alerts
 
 DEFAULT_POLICY_PRESETS = {
     "strict": {
@@ -183,6 +184,35 @@ def evaluate_review_policy(repo_id, risk_level):
     }
 
 
+def enforce_review_policy(repo_id, risk_info):
+    risk_level = str((risk_info or {}).get("level") or "LOW").strip().upper()
+    base_verdict = str((risk_info or {}).get("verdict") or "GO").strip().upper()
+    policy = evaluate_review_policy(repo_id, risk_level)
+    threshold = policy["threshold"]
+    blocked = bool(not policy["allowed"])
+
+    if base_verdict == "NO-GO":
+        effective_verdict = "NO-GO"
+    elif not policy["allowed"]:
+        effective_verdict = "NO-GO"
+    elif base_verdict == "CONDITIONAL":
+        effective_verdict = "CONDITIONAL"
+    else:
+        effective_verdict = "GO"
+
+    return {
+        "repo_id": repo_id,
+        "threshold": threshold,
+        "auto_review_enabled": policy["auto_review_enabled"],
+        "risk_level": risk_level,
+        "base_verdict": base_verdict,
+        "effective_verdict": effective_verdict,
+        "merge_gate_blocked": blocked or effective_verdict == "NO-GO",
+        "allowed": not (blocked or effective_verdict == "NO-GO"),
+        "decision": "pass" if not (blocked or effective_verdict == "NO-GO") else "fail",
+    }
+
+
 def trigger_review_for_repo(repo_full_name, token, pr_number, repo_id=None, repo_data=None, pr_data=None):
     if not repo_full_name or not token or pr_number <= 0:
         raise ValueError("repo_full_name, token, and pr_number are required")
@@ -274,6 +304,19 @@ def trigger_review_for_repo(repo_full_name, token, pr_number, repo_id=None, repo
     )
     conn.close()
 
+    alert_payload = {
+        "repo_name": repo_name,
+        "pr_number": pr_number,
+        "risk_level": risk_level,
+        "verdict": review_result.get("risk_level") if review_result.get("risk_level") else "NO-GO" if policy.get("decision") == "fail" else "GO",
+        "findings_count": len(review_result.get("review_result", {}).get("findings", [])) if isinstance(review_result.get("review_result"), dict) else 0,
+        "summary": summary,
+    }
+    alert_payload["verdict"] = "NO-GO" if policy.get("decision") == "fail" else "GO"
+    if isinstance(review_result.get("review_result"), dict):
+        alert_payload["findings_count"] = len(review_result["review_result"].get("findings", []))
+    alert_result = send_review_alerts(**alert_payload)
+
     return {
         "status": "reviewed",
         "repo_name": repo_name,
@@ -282,4 +325,5 @@ def trigger_review_for_repo(repo_full_name, token, pr_number, repo_id=None, repo
         "summary": summary,
         "review_result": review_result,
         "policy": policy,
+        "alerts": alert_result,
     }

@@ -3,8 +3,8 @@ import React from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ReleaseGuard AI — DevSecOps Governance & IBM Bob Agent Swarm",
-  description: "Automated Pull Request Risk Assessment, 7-Category Code Scanners, IBM Bob Multi-Agent Swarm, Zero-RTO Rollback Runbooks, and Incident Diagnosis.",
+  title: "ReleaseGuard | Release Governance",
+  description: "GitHub repo connectivity, PR review, release gate checks, and incident tracking for delivery teams.",
 };
 
 export default function RootLayout({

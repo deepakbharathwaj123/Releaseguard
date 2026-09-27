@@ -128,6 +128,20 @@ def init_db():
     );
     """)
 
+    # Team policy presets
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS team_policy_presets (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        severity_threshold TEXT DEFAULT 'medium',
+        auto_review_enabled BOOLEAN DEFAULT 1,
+        alert_channel TEXT DEFAULT 'slack',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
+    """)
+
     # Deployments table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS deployments (

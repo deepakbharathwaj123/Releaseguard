@@ -85,14 +85,14 @@ export const TeamAuthTab: React.FC<TeamAuthTabProps> = ({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
               <h3 className="text-base font-extrabold text-white tracking-tight flex items-center gap-2">
-                <span>ReleaseGuard Identity & Role-Based Access Governance</span>
+                <span>ReleaseGuard identity and role-based access governance</span>
                 <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                   Active IAM
                 </span>
               </h3>
             </div>
             <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-              Enforce least-privilege release operations across the IBM Bob multi-agent swarm. Authenticated personas govern release gate overrides, emergency rollback execution, and incident diagnostics.
+              Enforce least-privilege release access for each user and team. Role assignments control gate overrides, rollback steps, and incident review permissions.
             </p>
           </div>
 
@@ -200,7 +200,7 @@ export const TeamAuthTab: React.FC<TeamAuthTabProps> = ({
                 <Lock className="w-10 h-10 text-slate-500 mx-auto" />
                 <h4 className="text-sm font-bold text-white">No Active User Session</h4>
                 <p className="text-xs text-slate-400">
-                  Sign in or select a demo persona to unlock high-clearance actions.
+                  Sign in or select a team role to unlock high-clearance actions.
                 </p>
                 <button
                   onClick={onOpenLoginModal}
@@ -226,10 +226,10 @@ export const TeamAuthTab: React.FC<TeamAuthTabProps> = ({
               <div>
                 <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
                   <Users className="w-4 h-4 text-cyan-400" />
-                  <span>Switch Active Team Role Persona</span>
+                  <span>Switch active team role</span>
                 </h4>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Toggle between roles to see how governance permissions and override capabilities adapt instantly:
+                  Toggle between roles to verify how governance permissions and override capabilities adapt for the active repository workflow:
                 </p>
               </div>
             </div>

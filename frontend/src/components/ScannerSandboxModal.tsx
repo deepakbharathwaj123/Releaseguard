@@ -17,6 +17,8 @@ import {
 interface ScannerSandboxModalProps {
   onClose: () => void;
   onScanCompleted: (prId: string) => void;
+  repoOptions?: Array<{ id: string; name: string }>;
+  defaultRepoName?: string;
 }
 
 const PRESETS = [
@@ -128,10 +130,12 @@ diff --git a/tests/test_healthz.py b/tests/test_healthz.py
 
 export const ScannerSandboxModal: React.FC<ScannerSandboxModalProps> = ({
   onClose,
-  onScanCompleted
+  onScanCompleted,
+  repoOptions = [],
+  defaultRepoName = "Select connected repo"
 }) => {
   const [selectedPreset, setSelectedPreset] = useState<string>("critical");
-  const [repoName, setRepoName] = useState<string>("ops-pilot/core-banking-service");
+  const [repoName, setRepoName] = useState<string>(defaultRepoName || "Select connected repo");
   const [title, setTitle] = useState<string>(PRESETS[0].title);
   const [author, setAuthor] = useState<string>(PRESETS[0].author);
   const [sourceBranch, setSourceBranch] = useState<string>(PRESETS[0].source_branch);
@@ -139,6 +143,10 @@ export const ScannerSandboxModal: React.FC<ScannerSandboxModalProps> = ({
   const [diffContent, setDiffContent] = useState<string>(PRESETS[0].diff);
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [scanStep, setScanStep] = useState<string>("");
+
+  React.useEffect(() => {
+    setRepoName(defaultRepoName);
+  }, [defaultRepoName]);
 
   const handleSelectPreset = (presetId: string) => {
     const p = PRESETS.find((x) => x.id === presetId);
@@ -163,7 +171,7 @@ export const ScannerSandboxModal: React.FC<ScannerSandboxModalProps> = ({
       setScanStep("3. Aggregating findings & calculating composite risk score...");
       await new Promise((r) => setTimeout(r, 600));
 
-      setScanStep("4. Orchestrating IBM Bob Multi-Agent Swarm (Orchestrator, Security, Rollback)...");
+      setScanStep("4. Running Bob AI review checks (orchestrator, security, rollback)...");
       const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
       const resp = await fetch(`${apiBase}/api/prs/scan`, {
         method: "POST",
@@ -247,12 +255,26 @@ export const ScannerSandboxModal: React.FC<ScannerSandboxModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="text-sm font-semibold text-slate-400 block mb-1.5">Target Repository</label>
-              <input
-                type="text"
-                value={repoName}
-                onChange={(e) => setRepoName(e.target.value)}
-                className="w-full bg-[#121826] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-400"
-              />
+              {repoOptions.length > 0 ? (
+                <select
+                  value={repoName}
+                  onChange={(e) => setRepoName(e.target.value)}
+                  className="w-full bg-[#121826] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-400"
+                >
+                  {repoOptions.map((repo) => (
+                    <option key={repo.id} value={repo.name}>
+                      {repo.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={repoName}
+                  onChange={(e) => setRepoName(e.target.value)}
+                  className="w-full bg-[#121826] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-400"
+                />
+              )}
             </div>
 
             <div>

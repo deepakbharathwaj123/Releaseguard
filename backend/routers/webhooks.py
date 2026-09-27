@@ -15,6 +15,7 @@ from ..agents import (
     run_db_agent
 )
 from ..comment_generator import generate_github_pr_comment
+from ..github_review_service import enforce_review_policy
 
 router = APIRouter(prefix="/api/webhooks", tags=["webhooks"])
 
@@ -62,6 +63,11 @@ def process_pr_pipeline(repo_data: dict, pr_data: dict, diff_text: str):
 
     # Step 5: Compute Risk Score
     risk = compute_risk_score(findings)
+    policy = enforce_review_policy(repo_id, risk)
+    risk["verdict"] = policy["effective_verdict"]
+    risk["merge_gate_blocked"] = policy["merge_gate_blocked"]
+    risk["threshold"] = policy["threshold"]
+    risk["auto_review_enabled"] = policy["auto_review_enabled"]
 
     # Step 6: Call IBM Bob agents
     sec_agent = run_security_agent(findings)

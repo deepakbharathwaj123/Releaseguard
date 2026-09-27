@@ -230,43 +230,48 @@ def chat_with_bob_swarm(pr_id: str, payload: dict):
     findings = cursor.fetchall()
     conn.close()
 
-    # Generate multi-agent response
+    # Build a repo-grounded response from actual findings, not synthetic AI chatter.
     lower_msg = user_message.lower()
-    
+    scanner_titles = [f["title"] for f in findings]
+    high_severity = [f["title"] for f in findings if str(f.get("severity", "")).upper() in {"HIGH", "CRITICAL"}]
+    scan_summary = "; ".join(scanner_titles[:3]) if scanner_titles else "No scanner findings recorded for this PR."
+
     if any(k in lower_msg for k in ["bypass", "override", "force", "ignore"]):
         response = (
-            f"🤖 [Release Orchestrator]: Policy enforcement is currently set to '{pr['verdict']}'. "
-            f"An override is permitted only with dual-authorization from the Security Champion and Release Captain. "
-            f"Identified {len(findings)} unresolved finding(s). If approved under emergency break-glass, a follow-up remediation ticket must be logged within 2 hours."
+            f"Release verdict for PR #{pr['pr_number']} is currently '{pr['verdict']}'. "
+            f"The gate remains enforced because {len(findings)} finding(s) are still open. "
+            f"The current blockers are: {scan_summary}. "
+            f"Override requires explicit reviewer authorization and a documented remediation follow-up."
         )
     elif any(k in lower_msg for k in ["canary", "traffic", "rollout", "deploy"]):
         response = (
-            f"🤖 [Infra/DevOps Subagent]: For PR #{pr['pr_number']}, canary progressive rollout is viable: "
-            f"1) Route 5% traffic to canary pod; 2) Monitor 5xx error rate for 10 minutes; 3) If p99 latency < 250ms, scale to 50% then 100%. "
-            f"Rollback killswitch is primed if canary metrics exceed 1% error rate."
+            f"For PR #{pr['pr_number']}, deployment guidance should follow the recorded repo risk. "
+            f"If the risk stays above the accepted threshold, continue to block rollout until the active findings are fixed. "
+            f"Current high-risk issues: {', '.join(high_severity[:3]) if high_severity else 'No blocking findings on the current diff.'}"
         )
     elif any(k in lower_msg for k in ["secret", "key", "token", "security", "cve"]):
         sec_findings = [f['title'] for f in findings if f['scanner_type'] in ['secrets', 'config']]
         response = (
-            f"🤖 [Security Subagent]: Audited security posture for PR #{pr['pr_number']}. "
-            f"Critical issues flagged: {', '.join(sec_findings) if sec_findings else 'None'}. "
-            f"Ensure all tokens are stored in Vault / AWS Secrets Manager and never injected as plain text."
+            f"Security findings recorded for PR #{pr['pr_number']}: {', '.join(sec_findings) if sec_findings else 'No direct secret/config findings detected in this diff.'} "
+            f"The latest repo-level review remains gated on the current risk score of {pr['risk_score']}/100."
         )
     elif any(k in lower_msg for k in ["cost", "budget", "billing", "aws", "finops"]):
         response = (
-            f"🤖 [Cost Subagent]: Financial analysis confirms estimated cloud footprint delta for this PR. "
-            f"Resource allocation adheres to baseline quotas, but monitor autoscaling pod ceiling to avoid unexpected monthly egress spikes."
+            f"Cost findings are based on the current diff and scanner output only. "
+            f"No additional cost statement should be inferred beyond the recorded findings for PR #{pr['pr_number']}. "
+            f"Current review summary: {scan_summary}"
         )
     else:
         response = (
-            f"🤖 [IBM Bob Swarm]: Evaluated PR #{pr['pr_number']} ('{pr['title']}'). "
-            f"Composite Risk Score: {pr['risk_score']}/100 ({pr['risk_level']}). Verdict: {pr['verdict']}. "
-            f"Automated rollback plan is verified. All 7 scanner rules have completed evaluation."
+            f"PR #{pr['pr_number']} ('{pr['title']}') is currently scored at {pr['risk_score']}/100 ({pr['risk_level']}). "
+            f"Verdict: {pr['verdict']}. "
+            f"Recorded findings: {scan_summary}. "
+            f"This response is derived from the repository diff and the scanner results, not from generic AI filler."
         )
 
     return {
         "reply": response,
-        "author": "IBM Bob Multi-Agent Swarm",
+        "author": "ReleaseGuard Review Engine",
         "timestamp": "Just now",
         "pr_id": pr_id
     }

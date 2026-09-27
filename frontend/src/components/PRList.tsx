@@ -414,7 +414,7 @@ export const PRList: React.FC<PRListProps> = ({
                   <div className="flex items-center gap-4 self-end sm:self-center shrink-0">
                     <div className="text-right">
                       <span className="text-xs text-slate-500 uppercase font-bold tracking-wider block mb-1.5">
-                        IBM Bob Consensus
+                        Bob AI verdict
                       </span>
                       {getVerdictBadge(pr.verdict)}
                     </div>

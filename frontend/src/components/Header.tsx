@@ -74,10 +74,10 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
                 <span className="hidden sm:flex text-xs font-bold tracking-wide px-2.5 py-1 rounded-full bg-blue-500/15 text-[#38bdf8] border border-blue-500/30 items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-                  <span>IBM Bob Swarm</span>
+                  <span>Bob AI</span>
                 </span>
               </div>
-              <p className="hidden sm:block text-xs text-slate-400 font-medium">Enterprise DevSecOps & Release Governance</p>
+              <p className="hidden sm:block text-xs text-slate-400 font-medium">Release checks and repo health</p>
             </div>
           </div>
 
@@ -182,7 +182,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Refresh / Reset DB */}
             <button
               onClick={onResetDb}
-              title="Reset Demo Data"
+              title="Reset live state"
               className="p-2 rounded-xl bg-[#12192c] hover:bg-[#1a233b] border border-white/10 text-slate-300 hover:text-white transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-cyan-400" : ""}`} />
