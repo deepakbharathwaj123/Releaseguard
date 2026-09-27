@@ -567,7 +567,7 @@ export default function Home() {
         {activeTab === "auth" && (
           <TeamAuthTab
             currentUser={currentUser}
-            onOpenLogin={() => window.location.assign(LOGIN_URL)}
+            onOpenLogin={() => {}}
             onLogout={handleLogout}
           />
         )}
