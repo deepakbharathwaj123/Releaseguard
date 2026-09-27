@@ -2,7 +2,7 @@ services:
   - type: web
     name: releaseguard-backend
     runtime: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: python -m pip install -r requirements.txt
     startCommand: python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: FRONTEND_ORIGINS
