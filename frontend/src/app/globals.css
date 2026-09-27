@@ -63,17 +63,6 @@ body {
   box-shadow: 0 14px 40px -5px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
 }
 
-/* Panel variant — slightly more opaque, used for major section containers */
-.glass-panel {
-  background: rgba(10, 15, 29, 0.85);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
-  border-radius: 16px;
-  transition: border-color 0.2s ease;
-}
-
 .glass-card-interactive {
   background: var(--bg-card);
   backdrop-filter: blur(24px);

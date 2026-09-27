@@ -8,21 +8,21 @@
 
 import { apiFetch } from "@/lib/api";
 import React, { useState } from "react";
-import {
-  X,
-  ShieldAlert,
-  ShieldCheck,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  FileCode,
-  Bot,
-  RotateCcw,
-  DollarSign,
-  MessageSquare,
-  Copy,
-  Check,
-  Terminal,
+import { 
+  X, 
+  ShieldAlert, 
+  ShieldCheck, 
+  AlertTriangle, 
+  CheckCircle2, 
+  XCircle, 
+  FileCode, 
+  Bot, 
+  RotateCcw, 
+  DollarSign, 
+  MessageSquare, 
+  Copy, 
+  Check, 
+  Terminal, 
   ExternalLink,
   Lock,
   Layers,
@@ -32,7 +32,6 @@ import {
   UserCheck
 } from "lucide-react";
 import { TerminalModal } from "./TerminalModal";
-import { UserProfile } from "@/types/auth";
 
 interface Finding {
   id: string;
@@ -90,10 +89,9 @@ interface PRDetailModalProps {
   pr: PRDetail | null;
   onClose: () => void;
   onRefreshPr?: () => void;
-  currentUser?: UserProfile | null;
 }
 
-export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRefreshPr, currentUser }) => {
+export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRefreshPr }) => {
   const [activeTab, setActiveTab] = useState<string>("findings");
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
   const [selectedScannerFilter, setSelectedScannerFilter] = useState<string>("ALL");
@@ -271,8 +269,8 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                   <span>Release Verdict: {pr.verdict}</span>
                 </span>
 
-                {/* Override Action — only shown to users with canOverrideVerdict clearance */}
-                {pr.verdict !== "GO" && currentUser?.permissions?.canOverrideVerdict && (
+                {/* Override Action */}
+                {pr.verdict !== "GO" && (
                   <button
                     onClick={() => setShowOverrideDialog(true)}
                     className="flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
@@ -485,26 +483,6 @@ export const PRDetailModal: React.FC<PRDetailModalProps> = ({ pr, onClose, onRef
                       <p className="text-xs text-slate-300 leading-relaxed bg-[#0a0e18] p-3 rounded-lg border border-[rgba(255,255,255,0.04)]">
                         {agent.summary}
                       </p>
-
-                      {/* Confidence Bar */}
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-[10px] text-slate-400">
-                          <span className="font-semibold uppercase tracking-wider">Agent Confidence</span>
-                          <span className={`font-bold ${
-                            agent.confidence >= 80 ? "text-emerald-400" :
-                            agent.confidence >= 50 ? "text-amber-400" : "text-red-400"
-                          }`}>{agent.confidence}%</span>
-                        </div>
-                        <div className="h-1.5 w-full rounded-full bg-white/5 overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all duration-700 ${
-                              agent.confidence >= 80 ? "bg-emerald-500" :
-                              agent.confidence >= 50 ? "bg-amber-500" : "bg-red-500"
-                            }`}
-                            style={{ width: `${agent.confidence}%` }}
-                          />
-                        </div>
-                      </div>
 
                       {agent.details_json?.checklist && (
                         <div className="space-y-1.5 pt-1">

@@ -85,7 +85,6 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
   const [copiedKillswitch, setCopiedKillswitch] = useState<string | null>(null);
   const [telemetryData, setTelemetryData] = useState<any | null>(null);
   const [showTerminalPrId, setShowTerminalPrId] = useState<string | null>(null);
-  const [showTerminalPrNumber, setShowTerminalPrNumber] = useState<number>(0);
   const [permissionNotice, setPermissionNotice] = useState<string | null>(null);
 
   const fetchTelemetry = async () => {
@@ -362,10 +361,7 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
                       </span>
                       {inc.correlated_pr_id && (
                         <button
-                          onClick={() => {
-                            setShowTerminalPrId(inc.correlated_pr_id!);
-                            setShowTerminalPrNumber(inc.pr_number || 0);
-                          }}
+                          onClick={() => setShowTerminalPrId(inc.correlated_pr_id!)}
                           className="flex items-center gap-1 text-xs font-bold text-cyan-400 hover:text-cyan-300"
                         >
                           <Terminal className="w-3.5 h-3.5" />
@@ -443,11 +439,8 @@ export const IncidentHub: React.FC<IncidentHubProps> = ({
       {showTerminalPrId && (
         <TerminalModal
           isOpen={!!showTerminalPrId}
-          onClose={() => {
-            setShowTerminalPrId(null);
-            setShowTerminalPrNumber(0);
-          }}
-          prNumber={showTerminalPrNumber}
+          onClose={() => setShowTerminalPrId(null)}
+          prNumber={145}
           prId={showTerminalPrId}
         />
       )}

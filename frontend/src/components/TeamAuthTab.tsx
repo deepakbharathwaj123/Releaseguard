@@ -7,20 +7,7 @@
 "use client";
 
 import React from "react";
-import {
-  Activity,
-  CheckCircle2,
-  DollarSign,
-  FileCheck,
-  KeyRound,
-  Layers,
-  Lock,
-  LogOut,
-  ShieldAlert,
-  ShieldCheck,
-  Terminal,
-  XCircle,
-} from "lucide-react";
+import { KeyRound, Lock, LogOut, ShieldCheck } from "lucide-react";
 import { UserProfile } from "@/types/auth";
 
 interface TeamAuthTabProps {
@@ -73,64 +60,6 @@ export const TeamAuthTab: React.FC<TeamAuthTabProps> = ({
           <div className="flex gap-3">
             <ShieldCheck className="mt-0.5 shrink-0 text-emerald-300" size={18} />
             <div><p className="text-sm font-medium text-slate-200">Session</p><p className="mt-1 text-xs leading-5 text-slate-400">An opaque, revocable HTTP-only cookie expires after seven days.</p></div>
-          </div>
-
-          <div className="glass-card space-y-4 rounded-2xl p-6">
-            <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
-              <FileCheck className="h-4 w-4 text-emerald-400" />
-              <span>Role-Based Access Control (RBAC) Entitlements</span>
-            </h4>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-white/10 text-slate-400">
-                    <th className="py-2.5 pr-4 font-semibold">Governance Capability</th>
-                    <th className="px-3 py-2.5 text-center font-semibold">SRE Commander</th>
-                    <th className="px-3 py-2.5 text-center font-semibold">Security Lead</th>
-                    <th className="px-3 py-2.5 text-center font-semibold">Platform Architect</th>
-                    <th className="py-2.5 pl-3 text-center font-semibold">Developer</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-slate-300">
-                  <tr>
-                    <td className="flex items-center gap-2 py-2.5 pr-4 font-medium"><ShieldAlert className="h-3.5 w-3.5 text-cyan-400" /><span>Tech Lead PR Gate Override (GO)</span></td>
-                    <td className="px-3 py-2.5 text-center"><CheckCircle2 className="mx-auto h-4 w-4 text-emerald-400" /></td>
-                    <td className="px-3 py-2.5 text-center"><CheckCircle2 className="mx-auto h-4 w-4 text-emerald-400" /></td>
-                    <td className="px-3 py-2.5 text-center"><XCircle className="mx-auto h-4 w-4 text-slate-600" /></td>
-                    <td className="py-2.5 pl-3 text-center"><XCircle className="mx-auto h-4 w-4 text-slate-600" /></td>
-                  </tr>
-                  <tr>
-                    <td className="flex items-center gap-2 py-2.5 pr-4 font-medium"><Terminal className="h-3.5 w-3.5 text-purple-400" /><span>Execute Emergency Rollback Runbook</span></td>
-                    <td className="px-3 py-2.5 text-center"><CheckCircle2 className="mx-auto h-4 w-4 text-emerald-400" /></td>
-                    <td className="px-3 py-2.5 text-center"><XCircle className="mx-auto h-4 w-4 text-slate-600" /></td>
-                    <td className="px-3 py-2.5 text-center"><CheckCircle2 className="mx-auto h-4 w-4 text-emerald-400" /></td>
-                    <td className="py-2.5 pl-3 text-center"><XCircle className="mx-auto h-4 w-4 text-slate-600" /></td>
-                  </tr>
-                  <tr>
-                    <td className="flex items-center gap-2 py-2.5 pr-4 font-medium"><Activity className="h-3.5 w-3.5 text-amber-400" /><span>Trigger Incident Anomaly Simulation</span></td>
-                    <td className="px-3 py-2.5 text-center"><CheckCircle2 className="mx-auto h-4 w-4 text-emerald-400" /></td>
-                    <td className="px-3 py-2.5 text-center"><CheckCircle2 className="mx-auto h-4 w-4 text-emerald-400" /></td>
-                    <td className="px-3 py-2.5 text-center"><CheckCircle2 className="mx-auto h-4 w-4 text-emerald-400" /></td>
-                    <td className="py-2.5 pl-3 text-center"><XCircle className="mx-auto h-4 w-4 text-slate-600" /></td>
-                  </tr>
-                  <tr>
-                    <td className="flex items-center gap-2 py-2.5 pr-4 font-medium"><Layers className="h-3.5 w-3.5 text-blue-400" /><span>Configure GitHub Webhook Listener</span></td>
-                    <td className="px-3 py-2.5 text-center"><CheckCircle2 className="mx-auto h-4 w-4 text-emerald-400" /></td>
-                    <td className="px-3 py-2.5 text-center"><XCircle className="mx-auto h-4 w-4 text-slate-600" /></td>
-                    <td className="px-3 py-2.5 text-center"><CheckCircle2 className="mx-auto h-4 w-4 text-emerald-400" /></td>
-                    <td className="py-2.5 pl-3 text-center"><XCircle className="mx-auto h-4 w-4 text-slate-600" /></td>
-                  </tr>
-                  <tr>
-                    <td className="flex items-center gap-2 py-2.5 pr-4 font-medium"><DollarSign className="h-3.5 w-3.5 text-emerald-400" /><span>Approve FinOps Cloud Budget Overruns</span></td>
-                    <td className="px-3 py-2.5 text-center"><CheckCircle2 className="mx-auto h-4 w-4 text-emerald-400" /></td>
-                    <td className="px-3 py-2.5 text-center"><XCircle className="mx-auto h-4 w-4 text-slate-600" /></td>
-                    <td className="px-3 py-2.5 text-center"><CheckCircle2 className="mx-auto h-4 w-4 text-emerald-400" /></td>
-                    <td className="py-2.5 pl-3 text-center"><XCircle className="mx-auto h-4 w-4 text-slate-600" /></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
           </div>
         </div>
       </section>
