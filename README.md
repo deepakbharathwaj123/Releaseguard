@@ -4,6 +4,140 @@
 
 ---
 
+## 📖 Introduction
+
+ReleaseGuard AI is a DevSecOps release-governance platform for engineering teams. It connects repository activity, pull-request analysis, deployment health, incident response, and rollback planning in one workspace.
+
+The system is designed to answer four practical questions before and after a release:
+
+1. **What changed?** Fetch the pull request diff, repository metadata, infrastructure files, tests, and deployment configuration.
+2. **How risky is it?** Run seven focused scanners and combine their findings into a risk score and release verdict.
+3. **What should the team do?** Ask the IBM Bob agent swarm for security, infrastructure, database, cost, and rollback opinions.
+4. **What happens after deployment?** Monitor deployment and incident data, connect incidents to recent changes, and provide a recovery runbook.
+
+ReleaseGuard supports both interactive demonstrations and real repository workflows. The local engine works without external AI credentials, while IBM Cloud and GitHub integrations can be configured for connected environments.
+
+## ✨ Main Features
+
+- Pull-request risk scoring with `GO`, `CONDITIONAL`, and `NO-GO` release decisions.
+- Seven scanners for secrets, configuration, IaC, CI/CD, tests, cloud cost, and database migrations.
+- IBM Bob specialist agents coordinated by a release orchestrator.
+- GitHub repository authorization, pull-request scanning, webhooks, comments, and status checks.
+- Repository policy presets, merge-gate enforcement, and approval requirements.
+- Deployment health, release timelines, incident simulation, and rollback controls.
+- Runtime incident analysis that correlates telemetry and recent pull requests.
+- Interactive scanner sandbox for demonstrating high-risk changes.
+- Project Agent chat and action workflows for repository and release operations.
+- Persistent authentication with scrypt password hashing and revocable HTTP-only sessions.
+- Responsive Next.js dashboard with PR, repository, policy, operations, incident, agent, and access views.
+
+## 🧭 How to Use the Repository
+
+### Start the backend
+
+From the repository root, install the Python dependencies and start FastAPI:
+
+```bash
+python -m pip install -r requirements.txt
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8001
+```
+
+The backend exposes the API at `http://localhost:8001` and API documentation at `http://localhost:8001/docs`.
+
+### Start the frontend
+
+In a second terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev -- --hostname 127.0.0.1 --port 3000
+```
+
+Open `http://localhost:3000/login/`. Create a personal account, then open the dashboard at `http://localhost:3000/`.
+
+For local development, `frontend/.env.local` should point to the local API:
+
+```text
+NEXT_PUBLIC_API_BASE=http://localhost:8001
+```
+
+### Typical first workflow
+
+1. Register or sign in to a workspace account.
+2. Open **Repositories** and authorize or connect a repository.
+3. Review the pull requests shown in **Pull Requests**.
+4. Inspect scanner findings, risk score, Bob analysis, rollback guidance, and cost impact.
+5. Use **Policies** to apply a repository release policy.
+6. Use the **Workflow** view to understand the twelve-stage release path.
+7. Use the **Runtime Incidents** view to simulate or resolve an incident.
+
+## 🧩 How It Implements Common Cases
+
+### Case 1: A developer opens a normal pull request
+
+The GitHub webhook or manual scan sends the pull-request metadata and diff to the FastAPI backend. The scanner runner executes the seven scanners, stores the findings in SQLite, and calculates a risk score. The frontend then displays the result in the PR list and detail inspector.
+
+If no serious issues are found, the orchestrator can return a `GO` decision. The team can inspect the evidence before merging.
+
+### Case 2: A pull request exposes a secret
+
+The secrets scanner compares changed lines against credential and private-key patterns. A detected AWS key, cloud token, Slack token, Stripe key, password, JWT secret, or private key is recorded as a critical or high-severity finding.
+
+The release gate receives the finding, raises the risk score, and can produce a `NO-GO` decision. The PR detail view shows the affected file, matching line, explanation, and remediation such as revoking and rotating the credential.
+
+### Case 3: A pull request contains a destructive database migration
+
+The database scanner checks for destructive DDL, unsafe index creation, table locks, and required columns without defaults. The database agent then evaluates migration ordering and zero-downtime risk.
+
+The final review can require an expand-and-contract migration, a rollback plan, or an additional approval before the release is allowed to proceed.
+
+### Case 4: A change increases infrastructure cost
+
+The FinOps scanner identifies expensive compute types, uncapped autoscaling, and missing lifecycle controls. It estimates the monthly cost delta and sends the result to the cost agent.
+
+The release policy can require FinOps approval when the projected change exceeds a configured threshold. The PR inspector shows the cost breakdown together with the release decision.
+
+### Case 5: A deployment becomes unhealthy
+
+Deployment and telemetry data are loaded through the deployments API. When an incident is created or simulated, the incident agent correlates it with recent releases and pull requests.
+
+The incident hub displays the affected service, suspected root cause, related PR, severity, status, and recommended next action. The rollback agent can produce an emergency recovery runbook, and authorized users can trigger the configured rollback workflow.
+
+### Case 6: A team needs consistent repository governance
+
+An administrator creates a policy preset with a severity threshold, automatic review setting, and alert channel. The preset is assigned to one or more repositories.
+
+Future scans use the repository policy when deciding whether findings should block a release, require review, or remain informational.
+
+### Case 7: A team wants to demonstrate the platform without GitHub credentials
+
+The scanner sandbox provides prepared scenarios such as critical secret exposure, destructive database migration, and high-cost infrastructure changes. The sandbox sends a simulated payload through the same scanning and agent workflow used by real pull requests.
+
+This makes it possible to demonstrate the risk engine, findings, agent reasoning, release gate, and rollback guidance locally.
+
+## 🏗️ Repository Structure
+
+```text
+backend/              FastAPI application, routers, agents, scanners, and tests
+backend/agents/       Release, security, infrastructure, cost, DB, and incident agents
+backend/routers/      Authentication, GitHub, PR, repository, deployment, and webhook APIs
+backend/scanners/     Seven static and architectural scanners
+frontend/src/app/     Next.js routes and dashboard pages
+frontend/src/components/ Dashboard panels, lists, modals, workflow, and agent UI
+frontend/src/lib/     Frontend API and shared client utilities
+demo_repos/           Small repositories and diffs used by demonstrations
+docs/screenshots/     ReleaseGuard product and deployment screenshots
+```
+
+## 🔐 Authentication and Data Handling
+
+User passwords are stored as salted scrypt hashes. Successful login creates a revocable HTTP-only session cookie. API routes use the session to enforce repository, pull-request, and incident ownership.
+
+Local operational data is stored in `backend/releaseguard.db`. Do not commit real credentials, GitHub tokens, IBM Cloud keys, production databases, or personal session data. Production deployments should use HTTPS, set `SESSION_COOKIE_SECURE=true`, restrict `FRONTEND_ORIGINS`, and protect the database with backups and access controls.
+
+---
+
 ## 🚀 System Architecture & End-to-End Workflow
 
 ```
