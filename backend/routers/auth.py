@@ -163,7 +163,7 @@ def _issue_session(user_id: str, response: Response):
         max_age=SESSION_MAX_AGE,
         httponly=True,
         secure=secure_cookie == "true",
-        samesite="lax",
+        samesite="none" if secure_cookie == "true" else "lax",
         path="/",
     )
 

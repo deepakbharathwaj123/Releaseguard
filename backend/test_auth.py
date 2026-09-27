@@ -8,9 +8,10 @@ from backend.main import app
 
 def test_register_login_and_logout_persist_hashed_credentials(monkeypatch, tmp_path):
     monkeypatch.setattr(database, "DB_FILE", str(tmp_path / "auth.db"))
+    monkeypatch.setenv("SESSION_COOKIE_SECURE", "true")
     database.init_db()
 
-    client = TestClient(app)
+    client = TestClient(app, base_url="https://testserver")
     response = client.post(
         "/api/auth/register",
         json={"name": "Ada Lovelace", "email": "Ada@example.com", "password": "correct horse battery staple"},
@@ -18,7 +19,10 @@ def test_register_login_and_logout_persist_hashed_credentials(monkeypatch, tmp_p
 
     assert response.status_code == 201
     assert response.json()["email"] == "ada@example.com"
-    assert "httponly" in response.headers["set-cookie"].lower()
+    set_cookie = response.headers["set-cookie"].lower()
+    assert "httponly" in set_cookie
+    assert "secure" in set_cookie
+    assert "samesite=none" in set_cookie
     assert client.get("/api/repos").status_code == 200
 
     with sqlite3.connect(database.DB_FILE) as conn:
