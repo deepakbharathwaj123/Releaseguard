@@ -50,14 +50,16 @@ interface PRListProps {
   selectedPrId: string | null;
   selectedRepoFilter?: string | null;
   onClearRepoFilter?: () => void;
+  loading?: boolean;
 }
 
-export const PRList: React.FC<PRListProps> = ({ 
-  prs, 
-  onSelectPr, 
+export const PRList: React.FC<PRListProps> = ({
+  prs,
+  onSelectPr,
   selectedPrId,
   selectedRepoFilter,
-  onClearRepoFilter
+  onClearRepoFilter,
+  loading = false
 }) => {
   const [filterTier, setFilterTier] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -175,6 +177,44 @@ export const PRList: React.FC<PRListProps> = ({
         );
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        {/* Skeleton stat cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="glass-card p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="h-3 w-24 rounded bg-white/10" />
+                <div className="w-8 h-8 rounded-xl bg-white/5" />
+              </div>
+              <div className="h-8 w-16 rounded bg-white/10" />
+              <div className="h-2.5 w-28 rounded bg-white/5" />
+            </div>
+          ))}
+        </div>
+
+        {/* Skeleton filter bar */}
+        <div className="h-10 rounded-xl bg-white/5" />
+
+        {/* Skeleton PR cards */}
+        <div className="space-y-3">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="glass-card p-5 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-white/5 shrink-0" />
+              <div className="flex-1 space-y-2.5">
+                <div className="h-3 w-32 rounded bg-white/10" />
+                <div className="h-4 w-3/4 rounded bg-white/10" />
+                <div className="h-3 w-48 rounded bg-white/5" />
+              </div>
+              <div className="h-8 w-24 rounded-xl bg-white/5 shrink-0" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
