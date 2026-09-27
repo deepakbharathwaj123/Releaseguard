@@ -18,6 +18,7 @@ import {
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpen: () => void;
   prs: any[];
   repos: any[];
   onSelectPr: (prId: string) => void;
@@ -29,6 +30,7 @@ interface CommandPaletteProps {
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
   isOpen,
   onClose,
+  onOpen,
   prs,
   repos,
   onSelectPr,
@@ -42,8 +44,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        if (isOpen) onClose();
-        else setQuery("");
+        if (isOpen) {
+          onClose();
+        } else {
+          setQuery("");
+          onOpen();
+        }
       }
       if (e.key === "Escape" && isOpen) {
         onClose();
@@ -51,7 +57,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, onOpen]);
 
   if (!isOpen) return null;
 

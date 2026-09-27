@@ -150,13 +150,17 @@ export default function Home() {
         loading={loading}
         totalPrs={prs.length}
         blockedCount={blockedCount}
+        activeIncidentsCount={incidents.filter((i) => i.status !== "RESOLVED").length}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
         {/* End-to-End Workflow Pipeline Visualizer Banner */}
-        <WorkflowArchitectureBanner />
+        <WorkflowArchitectureBanner
+          onNavigateTab={setActiveTab}
+          onOpenSandbox={() => setShowSandbox(true)}
+        />
 
         {/* Tab 1: Pull Requests Dashboard (Step 9) */}
         {activeTab === "prs" && (
@@ -164,6 +168,7 @@ export default function Home() {
             prs={prs}
             onSelectPr={handleSelectPr}
             selectedPrId={selectedPrId}
+            loading={loading}
           />
         )}
 
@@ -171,8 +176,12 @@ export default function Home() {
         {activeTab === "repos" && (
           <RepoList
             repos={repos}
-            onSelectRepo={(repoId) => {
+            loading={loading}
+            onSelectRepo={(_repoId, repoFullName) => {
               setActiveTab("prs");
+              // RepoList navigates to PRs tab; PRList handles its own repo filter via dropdown
+              // The full name is available here for future deep-linking
+              void repoFullName;
             }}
           />
         )}
@@ -231,6 +240,8 @@ export default function Home() {
             onTriggerIncident={handleTriggerIncident}
             onResolveIncident={handleResolveIncident}
             onSelectPr={handleSelectPr}
+            currentUser={currentUser}
+            onOpenAuthModal={() => setIsAuthModalOpen(true)}
           />
         )}
 
@@ -258,6 +269,7 @@ export default function Home() {
             if (selectedPrId) handleSelectPr(selectedPrId);
             fetchAllData();
           }}
+          currentUser={currentUser}
         />
       )}
 
@@ -282,6 +294,7 @@ export default function Home() {
       <CommandPalette
         isOpen={showCommandPalette}
         onClose={() => setShowCommandPalette(false)}
+        onOpen={() => setShowCommandPalette(true)}
         prs={prs}
         repos={repos}
         onSelectPr={handleSelectPr}

@@ -1,26 +1,27 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  ShieldCheck, 
-  Lock, 
-  UserCheck, 
-  Building2, 
-  KeyRound, 
-  CheckCircle2, 
-  XCircle, 
-  AlertTriangle, 
-  LogOut, 
-  RefreshCw, 
-  Fingerprint, 
-  ShieldAlert, 
-  Users, 
-  Clock, 
+import {
+  ShieldCheck,
+  Lock,
+  UserCheck,
+  Building2,
+  KeyRound,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  LogOut,
+  RefreshCw,
+  Fingerprint,
+  ShieldAlert,
+  Users,
+  Clock,
   FileCheck,
   Terminal,
   Activity,
   Layers,
-  ArrowRight
+  ArrowRight,
+  DollarSign
 } from "lucide-react";
 import { UserProfile, DEMO_USERS } from "@/types/auth";
 
@@ -342,6 +343,17 @@ export const TeamAuthTab: React.FC<TeamAuthTabProps> = ({
                     <td className="py-2.5 pr-4 font-medium flex items-center gap-2">
                       <Layers className="w-3.5 h-3.5 text-blue-400" />
                       <span>Configure GitHub Webhook Listener</span>
+                    </td>
+                    <td className="py-2.5 px-3 text-center"><CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto" /></td>
+                    <td className="py-2.5 px-3 text-center"><XCircle className="w-4 h-4 text-slate-600 mx-auto" /></td>
+                    <td className="py-2.5 px-3 text-center"><CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto" /></td>
+                    <td className="py-2.5 pl-3 text-center"><XCircle className="w-4 h-4 text-slate-600 mx-auto" /></td>
+                  </tr>
+
+                  <tr>
+                    <td className="py-2.5 pr-4 font-medium flex items-center gap-2">
+                      <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Approve FinOps Cloud Budget Overruns</span>
                     </td>
                     <td className="py-2.5 px-3 text-center"><CheckCircle2 className="w-4 h-4 text-emerald-400 mx-auto" /></td>
                     <td className="py-2.5 px-3 text-center"><XCircle className="w-4 h-4 text-slate-600 mx-auto" /></td>

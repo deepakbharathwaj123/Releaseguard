@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Shield, 
-  Sparkles, 
-  RefreshCw, 
-  PlusCircle, 
-  Activity, 
-  GitPullRequest, 
-  Search, 
+import {
+  Shield,
+  Sparkles,
+  RefreshCw,
+  PlusCircle,
+  Activity,
+  GitPullRequest,
+  Search,
   Command,
   FolderGit2,
   Lock,
@@ -16,7 +16,8 @@ import {
   ChevronDown,
   LogOut,
   KeyRound,
-  ShieldCheck
+  ShieldCheck,
+  AlertOctagon
 } from "lucide-react";
 import { UserProfile, DEMO_USERS } from "@/types/auth";
 
@@ -34,6 +35,7 @@ interface HeaderProps {
   loading: boolean;
   totalPrs: number;
   blockedCount: number;
+  activeIncidentsCount?: number;
   reposCount?: number;
 }
 
@@ -51,6 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
   loading,
   totalPrs,
   blockedCount,
+  activeIncidentsCount = 0,
   reposCount = 3
 }) => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -302,22 +305,37 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Mobile Navigation Tabs */}
         <div className="flex lg:hidden items-center gap-1 overflow-x-auto py-2.5 border-t border-white/5 text-xs">
           {[
-            { id: "prs", label: `Pull Requests (${totalPrs})` },
-            { id: "repos", label: "Repositories" },
-            { id: "workflow", label: "Workflow Engine" },
-            { id: "incidents", label: "Runtime Incidents" },
-            { id: "auth", label: "Access & Auth" },
+            {
+              id: "prs",
+              label: `PRs (${totalPrs})`,
+              badge: blockedCount > 0 ? `${blockedCount} blocked` : null,
+              badgeColor: "bg-red-500/30 text-red-300 border-red-500/40"
+            },
+            { id: "repos", label: "Repos", badge: null, badgeColor: "" },
+            { id: "workflow", label: "Pipeline", badge: null, badgeColor: "" },
+            {
+              id: "incidents",
+              label: "Incidents",
+              badge: activeIncidentsCount > 0 ? String(activeIncidentsCount) : null,
+              badgeColor: "bg-amber-500/30 text-amber-300 border-amber-500/40"
+            },
+            { id: "auth", label: "Access", badge: null, badgeColor: "" },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap font-semibold transition-all ${
                 activeTab === tab.id
                   ? "bg-[#0f62fe] text-white"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              {tab.badge && (
+                <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full border ${tab.badgeColor} animate-pulse`}>
+                  {tab.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
