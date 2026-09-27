@@ -17,6 +17,12 @@ The system is designed to answer four practical questions before and after a rel
 
 ReleaseGuard supports both interactive demonstrations and real repository workflows. The local engine works without external AI credentials, while IBM Cloud and GitHub integrations can be configured for connected environments.
 
+## 📬 Contact
+
+For project questions, collaboration, or future contact, email:
+
+**deepakbala2007@gmail.com**
+
 ## ✨ Main Features
 
 - Pull-request risk scoring with `GO`, `CONDITIONAL`, and `NO-GO` release decisions.
