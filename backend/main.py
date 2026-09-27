@@ -28,14 +28,20 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Enable CORS for Next.js frontend (port 3000, 3001, etc.)
+# Enable CORS for Next.js frontend
+_DEFAULT_ORIGINS = (
+    "http://localhost:3000,"
+    "http://127.0.0.1:3000,"
+    "https://releaseguard-ai.pages.dev,"
+    "https://ops-pilot1-1.onrender.com"
+)
+_raw_origins = os.getenv("FRONTEND_ORIGINS", _DEFAULT_ORIGINS)
+_allowed_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        origin.strip()
-        for origin in os.getenv("FRONTEND_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
-        if origin.strip()
-    ],
+    allow_origins=_allowed_origins,
+    allow_origin_regex=r"https://[a-z0-9]+\.releaseguard-ai\.pages\.dev",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
