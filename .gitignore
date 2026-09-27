@@ -118,6 +118,7 @@ build/
 
 /Lib/
 /Scripts/
+.wrangler/
 *.db
 *.sqlite
 *.sqlite3
