@@ -42,9 +42,10 @@ interface RepoListProps {
   onSelectRepo: (repoId: string, repoFullName: string) => void;
   onDeleteRepo?: (repoId: string) => void;
   onRefreshRepos?: () => void;
+  loading?: boolean;
 }
 
-export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo, onDeleteRepo, onRefreshRepos }) => {
+export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo, onDeleteRepo, onRefreshRepos, loading = false }) => {
   const [copiedUrl, setCopiedUrl] = useState<boolean>(false);
   const [repoInput, setRepoInput] = useState<string>("");
   const [prNumberInput, setPrNumberInput] = useState<string>("1");
@@ -277,6 +278,28 @@ export const RepoList: React.FC<RepoListProps> = ({ repos, onSelectRepo, onDelet
       setIsBulkImporting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="glass-card h-28 rounded-2xl bg-white/5 p-6" />
+        <div className="glass-card h-44 rounded-2xl bg-white/5 p-5" />
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+          {[...Array(3)].map((_, index) => (
+            <div key={index} className="glass-card h-48 space-y-4 rounded-2xl p-5">
+              <div className="flex items-center justify-between">
+                <div className="h-9 w-9 rounded-xl bg-white/5" />
+                <div className="h-4 w-20 rounded bg-white/10" />
+              </div>
+              <div className="h-4 w-40 rounded bg-white/10" />
+              <div className="h-3 w-full rounded bg-white/5" />
+              <div className="h-3 w-3/4 rounded bg-white/5" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -37,6 +37,7 @@ interface HeaderProps {
   loading: boolean;
   totalPrs: number;
   blockedCount: number;
+  activeIncidentsCount?: number;
   reposCount?: number;
 }
 
@@ -53,6 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
   loading,
   totalPrs,
   blockedCount,
+  activeIncidentsCount = 0,
   reposCount = 3
 }) => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -288,23 +290,38 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Mobile Navigation Tabs */}
         <div className="flex lg:hidden items-center gap-1 overflow-x-auto py-2 border-t border-white/5 text-sm">
           {[
-            { id: "prs", label: `PRs (${totalPrs})` },
-            { id: "repos", label: "Repos" },
-            { id: "workflow", label: "Workflow" },
-            { id: "incidents", label: "Incidents" },
-            { id: "agent", label: "Agent" },
-            { id: "auth", label: "Auth" },
+            {
+              id: "prs",
+              label: `PRs (${totalPrs})`,
+              badge: blockedCount > 0 ? `${blockedCount} blocked` : null,
+              badgeColor: "bg-red-500/30 text-red-300 border-red-500/40",
+            },
+            { id: "repos", label: "Repos", badge: null, badgeColor: "" },
+            { id: "workflow", label: "Workflow", badge: null, badgeColor: "" },
+            {
+              id: "incidents",
+              label: "Incidents",
+              badge: activeIncidentsCount > 0 ? String(activeIncidentsCount) : null,
+              badgeColor: "bg-amber-500/30 text-amber-300 border-amber-500/40",
+            },
+            { id: "agent", label: "Agent", badge: null, badgeColor: "" },
+            { id: "auth", label: "Auth", badge: null, badgeColor: "" },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3.5 py-1.5 rounded-lg whitespace-nowrap font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap font-semibold transition-all ${
                 activeTab === tab.id
                   ? "bg-[#0f62fe] text-white"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              {tab.badge && (
+                <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full border ${tab.badgeColor} animate-pulse`}>
+                  {tab.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
